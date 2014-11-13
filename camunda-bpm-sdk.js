@@ -221,11 +221,12 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":9,"./../events":10}],2:[function(_dereq_,module,exports){
+},{"./../base-class":14,"./../events":15}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var request = _dereq_('superagent');
 var Events = _dereq_('./../events');
+var utils = _dereq_('./../utils');
 var noop = function() {};
 
 /**
@@ -248,17 +249,35 @@ var HttpClient = function(config) {
   this.config = config;
 };
 
-function toDone(response, done) {
-  // superagent puts the parsed data into a property named "body"
-  // and the "raw" content in property named "text"
-  // and.. it does not parse the response if it does not have
-  // the "application/json" type.
-  if (response.type === 'application/hal+json' && !response.body) {
-    response.body = JSON.parse(response.text);
-  }
+function end(self, done) {
+  return function(err, response) {
+    // TODO: investigate the possible problems related to response without content
+    if (err || (!response.ok && !response.noContent)) {
+      err = err || response.error || new Error('The '+ response.req.method +' request on '+ response.req.url +' failed');
+      if (response.body) {
+        if (response.body.message) {
+          err.message = response.body.message;
+        }
+      }
+      self.trigger('error', err);
+      return done(err);
+    }
 
-  // TODO: investigate the possibility of getting a response without content
-  done(null, response.body ? response.body : (response.text ? response.text : ''));
+    // superagent puts the parsed data into a property named "body"
+    // and the "raw" content in property named "text"
+    // and.. it does not parse the response if it does not have
+    // the "application/json" type.
+    if (response.type === 'application/hal+json') {
+      if (!response.body) {
+        response.body = JSON.parse(response.text);
+      }
+
+      // and process embedded resources
+      response.body = utils.solveHALEmbedded(response.body);
+    }
+
+    done(null, response.body ? response.body : (response.text ? response.text : ''));
+  };
 }
 
 /**
@@ -271,19 +290,10 @@ HttpClient.prototype.post = function(path, options) {
   var url = this.config.baseUrl + (path ? '/'+ path : '');
   var req = request
     .post(url)
-    .set('Accept', 'application/hal+json, application/json')
+    .set('Accept', 'application/hal+json, application/json; q=0.5')
     .send(options.data || {});
 
-  req.end(function(err, response) {
-    // TODO: investigate the possible problems related to response without content
-    if (err || (!response.ok && !response.noContent)) {
-      err = err || response.error || new Error('The request on '+ url +' failed');
-      self.trigger('error', err);
-      return done(err);
-    }
-
-    toDone(response, done);
-  });
+  req.end(end(self, done));
 };
 
 
@@ -303,32 +313,33 @@ HttpClient.prototype.load = function(url, options) {
   options = options || {};
   var done = options.done || noop;
   var self = this;
+
+  var accept = options.accept || 'application/hal+json, application/json; q=0.5';
+
   var req = request
     .get(url)
-    .set('Accept', 'application/hal+json, application/json')
+    .set('Accept', accept)
     .query(options.data || {});
 
-  req.end(function(err, response) {
-    if (err || !response.ok) {
-      err = err || response.error || new Error('The request on '+ url +' failed');
-      self.trigger('error', err);
-      return done(err);
-    }
-
-    toDone(response, done);
-  });
+  req.end(end(self, done));
 };
 
 
 /**
  * Performs a PUT HTTP request
  */
-HttpClient.prototype.put = function(data, options) {
-  data = data || {};
+HttpClient.prototype.put = function(path, options) {
   options = options || {};
   var done = options.done || noop;
+  var self = this;
+  var url = this.config.baseUrl + (path ? '/'+ path : '');
 
-  // toDone(response, done);
+  var req = request
+    .put(url)
+    .set('Accept', 'application/hal+json, application/json; q=0.5')
+    .send(options.data || {});
+
+  req.end(end(self, done));
 };
 
 
@@ -336,18 +347,41 @@ HttpClient.prototype.put = function(data, options) {
 /**
  * Performs a DELETE HTTP request
  */
-HttpClient.prototype.del = function(data, options) {
-  var instance = this.instance;
-  data = data || {};
+HttpClient.prototype.del = function(path, options) {
   options = options || {};
   var done = options.done || noop;
+  var self = this;
+  var url = this.config.baseUrl + (path ? '/'+ path : '');
 
-  // toDone(response, done);
+  var req = request
+    .del(url)
+    .set('Accept', 'application/hal+json, application/json; q=0.5')
+    .send(options.data || {});
+
+  req.end(end(self, done));
 };
+
+
+
+/**
+ * Performs a OPTIONS HTTP request
+ */
+HttpClient.prototype.options = function(path, options) {
+  options = options || {};
+  var done = options.done || noop;
+  var self = this;
+  var url = this.config.baseUrl + (path ? '/'+ path : '');
+
+  var req = request('OPTIONS', url)
+    .set('Accept', 'application/hal+json, application/json; q=0.5');
+
+  req.end(end(self, done));
+};
+
 
 module.exports = HttpClient;
 
-},{"./../events":10,"superagent":21}],3:[function(_dereq_,module,exports){
+},{"./../events":15,"./../utils":26,"superagent":27}],3:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -425,11 +459,16 @@ CamundaClient.HttpClient = _dereq_('./http-client');
    */
   proto.initialize = function() {
     /* jshint sub: true */
-    _resources['pile']                = _dereq_('./resources/pile');
+    _resources['authorization']       = _dereq_('./resources/authorization');
+    _resources['filter']              = _dereq_('./resources/filter');
+    _resources['history']             = _dereq_('./resources/history');
     _resources['process-definition']  = _dereq_('./resources/process-definition');
     _resources['process-instance']    = _dereq_('./resources/process-instance');
     _resources['task']                = _dereq_('./resources/task');
     _resources['variable']            = _dereq_('./resources/variable');
+    _resources['case-execution']      = _dereq_('./resources/case-execution');
+    _resources['case-instance']       = _dereq_('./resources/case-instance');
+    _resources['case-definition']     = _dereq_('./resources/case-definition');
     /* jshint sub: false */
     var self = this;
 
@@ -503,7 +542,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./http-client":2,"./resources/pile":4,"./resources/process-definition":5,"./resources/process-instance":6,"./resources/task":7,"./resources/variable":8}],4:[function(_dereq_,module,exports){
+},{"./http-client":2,"./resources/authorization":4,"./resources/case-definition":5,"./resources/case-execution":6,"./resources/case-instance":7,"./resources/filter":8,"./resources/history":9,"./resources/process-definition":10,"./resources/process-instance":11,"./resources/task":12,"./resources/variable":13}],4:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -511,23 +550,486 @@ var AbstractClientResource = _dereq_("./../abstract-client-resource");
 
 
 /**
- * Pile Resource
+ * Authorization Resource
  * @class
  * @memberof CamSDK.client.resource
  * @augments CamSDK.client.AbstractClientResource
  */
-var Pile = AbstractClientResource.extend();
+var Authorization = AbstractClientResource.extend();
 
 /**
  * API path for the process definition resource
  * @type {String}
  */
-Pile.path = 'pile';
+Authorization.path = 'authorization';
 
-module.exports = Pile;
+
+
+
+/**
+ * Fetch a list of authorizations
+ *
+ * @param {Object} params
+ * @param {Object} [params.id]            Authorization by the id of the authorization.
+ * @param {Object} [params.type]          Authorization by the type of the authorization.
+ * @param {Object} [params.userIdIn]      Authorization by a comma-separated list of userIds
+ * @param {Object} [params.groupIdIn]     Authorization by a comma-separated list of groupIds
+ * @param {Object} [params.resourceType]  Authorization by resource type
+ * @param {Object} [params.resourceId]    Authorization by resource id.
+ * @param {Object} [params.sortBy]        Sort the results lexicographically by a given criterion.
+ *                                        Valid values are resourceType and resourceId.
+ *                                        Must be used with the sortOrder parameter.
+ * @param {Object} [params.sortOrder]     Sort the results in a given order.
+ *                                        Values may be "asc" or "desc".
+ *                                        Must be used in conjunction with the sortBy parameter.
+ * @param {Object} [params.firstResult]   Pagination of results.
+ *                                        Specifies the index of the first result to return.
+ * @param {Object} [params.maxResults]    Pagination of results.
+ *                                        Specifies the maximum number of results to return.
+ * @param {Function} done
+ */
+Authorization.list = function(params, done) {
+  return this.http.get(this.path, {
+    data: params,
+    done: done
+  });
+};
+
+
+
+/**
+ * Retrieve a single authorization
+ *
+ * @param  {uuid}     authorizationId     of the authorization to be requested
+ * @param  {Function} done
+ */
+Authorization.get = function(authorizationId, done) {
+  return this.http.get(this.path +'/'+ authorizationId, {
+    done: done
+  });
+};
+
+
+/**
+ * Creates an authorization
+ *
+ * @param  {Object}   authorization       is an object representation of an authorization
+ * @param  {Function} done
+ */
+Authorization.create = function(authorization, done) {
+  return this.http.post(this.path +'/create', {
+    data: authorization,
+    done: done
+  });
+};
+
+
+/**
+ * Update an authorization
+ *
+ * @param  {Object}   authorization       is an object representation of an authorization
+ * @param  {Function} done
+ */
+Authorization.update = function(authorization, done) {
+  return this.http.put(this.path +'/'+ authorization.id, {
+    data: authorization,
+    done: done
+  });
+};
+
+
+
+/**
+ * Save an authorization
+ *
+ * @see Authorization.create
+ * @see Authorization.update
+ *
+ * @param  {Object}   authorization   is an object representation of an authorization,
+ *                                    if it has an id property, the authorization will be updated,
+ *                                    otherwise created
+ * @param  {Function} done
+ */
+Authorization.save = function(authorization, done) {
+  return Authorization[authorization.id ? 'update' : 'create'](authorization, done);
+};
+
+
+
+/**
+ * Delete an authorization
+ *
+ * @param  {uuid}     id   of the authorization to delete
+ * @param  {Function} done
+ */
+Authorization.delete = function(id, done) {
+  return this.http.del(this.path +'/'+ id, {
+    done: done
+  });
+};
+
+
+
+module.exports = Authorization;
 
 
 },{"./../abstract-client-resource":1}],5:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
+/**
+ * CaseDefinition Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var CaseDefinition = AbstractClientResource.extend();
+
+/**
+ * Path used by the resource to perform HTTP queries
+ * @type {String}
+ */
+CaseDefinition.path = 'case-definition';
+
+CaseDefinition.list = function(params, done) {
+  return this.http.get(this.path, {
+    data: params,
+    done: done
+  });
+};
+
+CaseDefinition.create = function(caseDefinitionId, params, done) {
+  this.http.post(this.path + '/' + caseDefinitionId + '/create', {
+    data: params,
+    done: done
+  });
+};
+
+module.exports = CaseDefinition;
+
+},{"./../abstract-client-resource":1}],6:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
+/**
+ * CaseExecution Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var CaseExecution = AbstractClientResource.extend();
+
+/**
+ * Path used by the resource to perform HTTP queries
+ * @type {String}
+ */
+CaseExecution.path = 'case-execution';
+
+CaseExecution.list = function(params, done) {
+  return this.http.get(this.path, {
+    data: params,
+    done: function(err, data) {
+      if (err) {
+        return done(err);
+      }
+
+      done(null, data);
+    }
+  });
+};
+
+CaseExecution.disable = function(executionId, params, done) {
+  this.http.post(this.path + '/' + executionId + '/disable', {
+    data: params,
+    done: done
+  });
+};
+
+CaseExecution.reenable = function(executionId, params, done) {
+  this.http.post(this.path + '/' + executionId + '/reenable', {
+    data: params,
+    done: done
+  });
+};
+
+CaseExecution.manualStart = function(executionId, params, done) {
+  this.http.post(this.path + '/' + executionId + '/manual-start', {
+    data: params,
+    done: done
+  });
+};
+
+CaseExecution.complete = function(executionId, params, done) {
+  this.http.post(this.path + '/' + executionId + '/complete', {
+    data: params,
+    done: done
+  });
+};
+
+module.exports = CaseExecution;
+
+},{"./../abstract-client-resource":1}],7:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
+/**
+ * CaseInstance Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var CaseInstance = AbstractClientResource.extend();
+
+/**
+ * Path used by the resource to perform HTTP queries
+ * @type {String}
+ */
+CaseInstance.path = 'case-instance';
+
+CaseInstance.list = function(params, done) {
+  return this.http.get(this.path, {
+    data: params,
+    done: done
+  });
+};
+
+CaseInstance.close = function(instanceId, params, done) {
+  this.http.post(this.path + '/' + instanceId + '/close', {
+    data: params,
+    done: done
+  });
+};
+
+module.exports = CaseInstance;
+
+},{"./../abstract-client-resource":1}],8:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
+
+
+/**
+ * Filter Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var Filter = AbstractClientResource.extend();
+
+/**
+ * API path for the filter resource
+ * @type {String}
+ */
+Filter.path = 'filter';
+
+
+/**
+ * Retrieve a single filter
+ *
+ * @param  {uuid}     filterId   of the filter to be requested
+ * @param  {Function} done
+ */
+Filter.get = function(filterId, done) {
+  return this.http.get(this.path +'/'+ filterId, {
+    done: done
+  });
+};
+
+
+/**
+ * Retrieve some filters
+ *
+ * @param  {Object}   data
+ * @param  {Integer}  [data.firstResult]
+ * @param  {Integer}  [data.maxResults]
+ * @param  {String}   [data.sortBy]
+ * @param  {String}   [data.sortOrder]
+ * @param  {Bool}     [data.itemCount]
+ * @param  {Function} done
+ */
+Filter.list = function(data, done) {
+  return this.http.get(this.path, {
+    data: data,
+    done: done
+  });
+};
+
+
+/**
+ * Get the tasks result of filter
+ *
+ * @param  {(Object.<String, *>|uuid)}  data  uuid of a filter or parameters
+ * @param  {uuid}     [data.id]               uuid of the filter to be requested
+ * @param  {Integer}  [data.firstResult]
+ * @param  {Integer}  [data.maxResults]
+ * @param  {String}   [data.sortBy]
+ * @param  {String}   [data.sortOrder]
+ * @param  {Function} done
+ */
+Filter.getTasks = function(data, done) {
+  var path = this.path +'/';
+
+  if (typeof data === 'string') {
+    path = path + data +'/list';
+    data = {};
+  }
+  else {
+    path = path + data.id +'/list';
+    delete data.id;
+  }
+
+  // those parameters have to be passed in the query and not body
+  path += '?firstResult='+ (data.firstResult || 0);
+  path += '&maxResults='+ (data.maxResults || 15);
+
+  return this.http.post(path, {
+    data: data,
+    done: done
+  });
+};
+
+
+/**
+ * Creates a filter
+ *
+ * @param  {Object}   filter   is an object representation of a filter
+ * @param  {Function} done
+ */
+Filter.create = function(filter, done) {
+  return this.http.post(this.path +'/create', {
+    data: filter,
+    done: done
+  });
+};
+
+
+/**
+ * Update a filter
+ *
+ * @param  {Object}   filter   is an object representation of a filter
+ * @param  {Function} done
+ */
+Filter.update = function(filter, done) {
+  return this.http.put(this.path +'/'+ filter.id, {
+    data: filter,
+    done: done
+  });
+};
+
+
+
+/**
+ * Save a filter
+ *
+ * @see Filter.create
+ * @see Filter.update
+ *
+ * @param  {Object}   filter   is an object representation of a filter, if it has
+ *                             an id property, the filter will be updated, otherwise created
+ * @param  {Function} done
+ */
+Filter.save = function(filter, done) {
+  return Filter[filter.id ? 'update' : 'create'](filter, done);
+};
+
+
+/**
+ * Delete a filter
+ *
+ * @param  {uuid}     id   of the filter to delete
+ * @param  {Function} done
+ */
+Filter.delete = function(id, done) {
+  return this.http.del(this.path +'/'+ id, {
+    done: done
+  });
+};
+
+
+/**
+ * Performs an authorizations lookup on the resource or entity
+ *
+ * @param  {uuid}     [id]   of the filter to get authorizations for
+ * @param  {Function} done
+ */
+Filter.authorizations = function(id, done) {
+  if (arguments.length === 1) {
+    return this.http.options(this.path, {
+      done: id
+    });
+  }
+
+  return this.http.options(this.path +'/'+ id, {
+    done: done
+  });
+};
+
+
+module.exports = Filter;
+
+
+},{"./../abstract-client-resource":1}],9:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_("./../abstract-client-resource");
+
+
+
+/**
+ * History Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var History = AbstractClientResource.extend();
+
+/**
+ * Path used by the resource to perform HTTP queries
+ * @type {String}
+ */
+History.path = 'history';
+
+
+/**
+ * Query for user operation log entries that fulfill the given parameters.
+ *
+ * @param {Object} params
+ * @param {String} [params.processDefinitionId]   Filter by process definition id.
+ * @param {String} [params.processDefinitionKey]  Filter by process definition key.
+ * @param {String} [params.processInstanceId]     Filter by process instance id.
+ * @param {String} [params.executionId]           Filter by execution id.
+ * @param {String} [params.caseDefinitionId]      Filter by case definition id.
+ * @param {String} [params.caseInstanceId]        Filter by case instance id.
+ * @param {String} [params.caseExecutionId]       Filter by case execution id.
+ * @param {String} [params.taskId]                Only include operations on this task.
+ * @param {String} [params.userId]                Only include operations of this user.
+ * @param {String} [params.operationId]           Filter by the id of the operation. This allows fetching of multiple entries which are part of a composite operation.
+ * @param {String} [params.operationType]         Filter by the type of the operation like Claim or Delegate.
+ * @param {String} [params.entityType]            Filter by the type of the entity that was affected by this operation, possible values are Task, Attachment or IdentityLink.
+ * @param {String} [params.property]              Only include operations that changed this property, e.g. owner or assignee
+ * @param {String} [params.afterTimestamp]        Restrict to entries that were created after the given timestamp. The timestamp must have the format yyyy-MM-dd'T'HH:mm:ss, e.g. 2014-02-25T14:58:37
+ * @param {String} [params.beforeTimestamp]       Restrict to entries that were created before the given timestamp. The timestamp must have the format yyyy-MM-dd'T'HH:mm:ss, e.g. 2014-02-25T14:58:37
+ * @param {String} [params.sortBy]                Sort the results by a given criterion. At the moment the query only supports sorting based on the timestamp.
+ * @param {String} [params.sortOrder]             Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
+ * @param {String} [params.firstResult]           Pagination of results. Specifies the index of the first result to return.
+ * @param {String} [params.maxResults]            Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
+ * @param {Function} done
+ */
+History.userOperation = function(params, done) {
+  return this.http.get(this.path + "/user-operation", {
+      data: params,
+      done: done
+  });
+};
+
+module.exports = History;
+
+
+},{"./../abstract-client-resource":1}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -584,11 +1086,11 @@ var ProcessDefinition = AbstractClientResource.extend(
    *
    * @param  {Function} [done]
    */
-  xml: function(done) {
-    return this.http.post(this.path, {
-      done: done || noop
-    });
-  },
+  // xml: function(id, done) {
+  //   return this.http.post(this.path + +'/xml', {
+  //     done: done || noop
+  //   });
+  // },
 
 
   /**
@@ -612,9 +1114,46 @@ var ProcessDefinition = AbstractClientResource.extend(
   path: 'process-definition',
 
 
+
+
+  /**
+   * Retrieve a single process definition
+   *
+   * @param  {uuid}     id    of the process definition to be requested
+   * @param  {Function} done
+   */
+  get: function(id, done) {
+
+    // var pointer = '';
+    // if (data.key) {
+    //   pointer = 'key/'+ data.key;
+    // }
+    // else if (data.id) {
+    //   pointer = data.id;
+    // }
+
+    return this.http.get(this.path +'/'+ id, {
+      done: done
+    });
+  },
+
+
+  /**
+   * Retrieve a single process definition
+   *
+   * @param  {String}   key    of the process definition to be requested
+   * @param  {Function} done
+   */
+  getByKey: function(key, done) {
+    return this.http.get(this.path +'/key/'+ key, {
+      done: done
+    });
+  },
+
+
   /**
    * Get a list of process definitions
-   * @param  {Object} [params]                      Query parameters as follow
+   * @param  {Object} params                        Query parameters as follow
    * @param  {String} [params.name]                 Filter by name.
    * @param  {String} [params.nameLike]             Filter by names that the parameter is a substring of.
    * @param  {String} [params.deploymentId]         Filter by the deployment the id belongs to.
@@ -735,6 +1274,18 @@ var ProcessDefinition = AbstractClientResource.extend(
 
 
   /**
+   * Retrieves the form of a process definition.
+   * @param  {Function} [done]
+   */
+  xml: function(data, done) {
+    var path = this.path +'/'+ (data.key ? 'key/'+ data.key : data.id) +'/xml';
+    return this.http.get(path, {
+      done: done || noop
+    });
+  },
+
+
+  /**
    * Submits the form of a process definition.
    *
    * @param  {Object} [data]
@@ -785,7 +1336,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 module.exports = ProcessDefinition;
 
 
-},{"./../abstract-client-resource":1}],6:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],11:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -842,7 +1393,7 @@ var ProcessInstance = AbstractClientResource.extend(
 
 module.exports = ProcessInstance;
 
-},{"./../abstract-client-resource":1}],7:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -916,10 +1467,10 @@ Task.path = 'task';
  * @param {String} [params.candidateGroups]                 Restrict to tasks that are offered to any of the given candidate groups. Takes a comma-separated list of group names, so for example developers,support,sales.
  * @param {String} [params.active]                          Only include active tasks. Values may be true or false. suspended Only include suspended tasks.
  *                                                          Values may be "true" or "false".
- * @param {String} [params.taskVariables]                   Only include tasks that have variables with certain values. Variable filtering expressions are comma-separated and are structured as follows:
+ * @param {String} [params.taskVariables]                   Only include tasks that have variables with certain values. Variable tasking expressions are comma-separated and are structured as follows:
  *                                                          A valid parameter value has the form key_operator_value. key is the variable name, op is the comparison operator to be used and value the variable value. Note: Values are always treated as String objects on server side. Valid operator values are: eq - equals; neq - not equals; gt - greater than; gteq - greater than or equals; lt - lower than; lteq - lower than or equals; like. key and value may not contain underscore or comma characters.
  * @param {String} [params.processVariables]                Only include tasks that belong to process instances that have variables with certain values.
- *                                                          Variable filtering expressions are comma-separated and are structured as follows:
+ *                                                          Variable tasking expressions are comma-separated and are structured as follows:
  *                                                          A valid parameter value has the form key_operator_value. "key" is the variable name, "op" is the comparison operator to be used and value the variable value.
  *                                                          Note: Values are always treated as String objects on server side.
  *                                                          Valid operator values are: "eq" - equals; "neq" - not equals; "gt" - greater than; "gteq" - greater than or equals; "lt" - lower than; "lteq" - lower than or equals; like.
@@ -953,7 +1504,7 @@ Task.list = function(params, done) {
         task._embedded = task._embedded || {};
         for (var p in procDefs) {
           if (procDefs[p].id === task.processDefinitionId) {
-            task._embedded.processDefinition = procDefs[p];
+            task._embedded.processDefinition = [procDefs[p]];
             break;
           }
         }
@@ -965,6 +1516,129 @@ Task.list = function(params, done) {
 };
 
 
+/**
+ * Retrieve a single task
+ * @param  {uuid}     taskId   of the task to be requested
+ * @param  {Function} done
+ */
+Task.get = function(taskId, done) {
+  return this.http.get(this.path +'/'+ taskId, {
+    done: done
+  });
+};
+
+/**
+ * Retrieve the comments for a single task
+ * @param  {uuid}     taskId   of the task for which the comments are requested
+ * @param  {Function} done
+ */
+Task.comments = function(taskId, done) {
+  return this.http.get(this.path +'/'+ taskId + "/comment", {
+    done: done
+  });
+};
+
+/**
+ * Retrieve the identity links for a single task
+ * @param  {uuid}     taskId   of the task for which the identity links are requested
+ * @param  {Function} done
+ */
+Task.identityLinks = function(taskId, done) {
+  return this.http.get(this.path +'/'+ taskId + "/identity-links", {
+    done: done
+  });
+};
+
+/**
+ * Add an identity link to a task
+ * @param  {uuid}     taskId          of the task for which the identity link is created
+ * @param  {Object} [params]
+ * @param  {String} [params.userId]   The id of the user to link to the task. If you set this parameter, you have to omit groupId
+ * @param  {String} [params.groupId]  The id of the group to link to the task. If you set this parameter, you have to omit userId
+ * @param  {String} [params.type]     Sets the type of the link. Must be provided
+ * @param  {Function} done
+ */
+Task.identityLinksAdd = function(taskId, params, done) {
+  return this.http.post(this.path +'/'+ taskId + "/identity-links", {
+    data: params,
+    done: done
+  });
+};
+
+/**
+ * Removes an identity link from a task.
+ * @param  {uuid}     taskId          The id of the task to remove a link from
+ * @param  {Object} [params]
+ * @param  {String} [params.userId]   The id of the user being part of the link. If you set this parameter, you have to omit groupId.
+ * @param  {String} [params.groupId]  The id of the group being part of the link. If you set this parameter, you have to omit userId.
+ * @param  {String} [params.type]     Specifies the type of the link. Must be provided.
+ * @param  {Function} done
+ */
+Task.identityLinksDelete = function(taskId, params, done) {
+  return this.http.post(this.path +'/'+ taskId + "/identity-links/delete", {
+    data: params,
+    done: done
+  });
+};
+
+/**
+ * Create a comment for a task.
+ *
+ * @param  {String}   taskId  The id of the task to add the comment to.
+ * @param  {String}   message The message of the task comment to create.
+ * @param  {Function} done
+ */
+Task.createComment = function(taskId, message, done) {
+  return this.http.post(this.path +'/'+ taskId +'/comment/create', {
+    data: {
+      message: message
+    },
+    done: done
+  });
+};
+
+/**
+ * Creates a task
+ *
+ * @param  {Object}   task   is an object representation of a task
+ * @param  {Function} done
+ */
+// Task.create = function(task, done) {
+//   return this.http.post(this.path +'/create', {
+//     data: task,
+//     done: done
+//   });
+// };
+
+
+/**
+ * Update a task
+ *
+ * @param  {Object}   task   is an object representation of a task
+ * @param  {Function} done
+ */
+Task.update = function(task, done) {
+  return this.http.put(this.path +'/'+ task.id, {
+    data: task,
+    done: done
+  });
+};
+
+
+
+// /**
+//  * Save a task
+//  *
+//  * @see Task.create
+//  * @see Task.update
+//  *
+//  * @param  {Object}   task   is an object representation of a task, if it has
+//  *                             an id property, the task will be updated, otherwise created
+//  * @param  {Function} done
+//  */
+// Task.save = function(task, done) {
+//   return Task[task.id ? 'update' : 'create'](task, done);
+// };
 
 /**
  * Change the assignee of a task to a specific user.
@@ -1092,18 +1766,28 @@ Task.formVariables = function(data, done) {
 
   return this.http.get(this.path +'/'+ pointer +'/form-variables', {
     data: {
-      variableNames: (data.names || []).join(',')
+      variableNames: (data.names || []).join(','),
+      deserializeValue: data.deserializeValue
     },
     done: done || function() {}
   });
 };
 
-
+/**
+ * Retrieve the form for a single task
+ * @param  {uuid}     taskId   of the task for which the form is requested
+ * @param  {Function} done
+ */
+Task.form = function(taskId, done) {
+  return this.http.get(this.path +'/'+ taskId + "/form", {
+    done: done
+  });
+};
 
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":1}],8:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -1127,7 +1811,7 @@ Variable.path = 'variable-instance';
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":1}],9:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],14:[function(_dereq_,module,exports){
 'use strict';
 
 var Events = _dereq_('./events');
@@ -1214,11 +1898,11 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":10}],10:[function(_dereq_,module,exports){
+},{"./events":15}],15:[function(_dereq_,module,exports){
 'use strict';
 
 /**
- * Events handling utility who can be used on
+ * Events handling utility which can be used on
  * any kind of object to provide `on`, `once`, `off`
  * and `trigger` functions.
  *
@@ -1368,9 +2052,9 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],11:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 'use strict';
-/* global CamSDK: false */
+/* global CamSDK, require, localStorage: false */
 
 /**
  * For all API client related
@@ -1386,6 +2070,10 @@ var InputFieldHandler = _dereq_('./controls/input-field-handler');
 var ChoicesFieldHandler = _dereq_('./controls/choices-field-handler');
 
 var BaseClass = _dereq_('./../base-class');
+
+var constants = _dereq_('./constants');
+
+var Events = _dereq_('./../events');
 
 
 
@@ -1409,6 +2097,8 @@ function CamundaForm(options) {
     throw new Error("CamundaForm need to be initialized with options.");
   }
 
+  var done = options.done = options.done || function (err) { if(err) throw err; };
+
   if (options.client) {
     this.client = options.client;
   }
@@ -1417,8 +2107,9 @@ function CamundaForm(options) {
   }
 
   if (!options.taskId && !options.processDefinitionId && !options.processDefinitionKey) {
-    throw new Error("Cannot initialize Taskform: either 'taskId' or 'processDefinitionId' or 'processDefinitionKey' must be provided");
+    return done(new Error("Cannot initialize Taskform: either 'taskId' or 'processDefinitionId' or 'processDefinitionKey' must be provided"));
   }
+
   this.taskId = options.taskId;
   this.processDefinitionId = options.processDefinitionId;
   this.processDefinitionKey = options.processDefinitionKey;
@@ -1428,11 +2119,11 @@ function CamundaForm(options) {
   this.formUrl = options.formUrl;
 
   if(!this.formElement && !this.containerElement) {
-    throw new Error("CamundaForm needs to be initilized with either 'formElement' or 'containerElement'");
+    return done(new Error("CamundaForm needs to be initilized with either 'formElement' or 'containerElement'"));
   }
 
   if(!this.formElement && !this.formUrl) {
-    throw new Error("Camunda form needs to be intialized with either 'formElement' or 'formUrl'");
+    return done(new Error("Camunda form needs to be intialized with either 'formElement' or 'formUrl'"));
   }
 
   /**
@@ -1454,9 +2145,14 @@ function CamundaForm(options) {
 
   this.fields = [];
 
+  this.scripts = [];
+
   this.options = options;
 
-  this.initialize(options.initialized);
+  // init event support
+  Events.attach(this);
+
+  this.initialize(done);
 }
 
 
@@ -1478,25 +2174,36 @@ CamundaForm.prototype.initializeHandler = function(FieldHandler) {
  * @memberof CamSDK.form.CamundaForm.prototype
  */
 CamundaForm.prototype.initialize = function(done) {
-  done = done || function() {};
+  done = done || function (err) { if(err) throw err; };
   var self = this;
 
   // check whether form needs to be loaded first
   if(this.formUrl) {
+
     this.client.http.load(this.formUrl, {
+      accept: '*/*',
       done: function(err, result) {
         if(err) {
           return done(err);
         }
 
-        self.renderForm(result);
+        try {
+          self.renderForm(result);
+          self.initializeForm(done);
 
-        self.initializeForm(done);
-
+        } catch (error) {
+          done(error);
+        }
       }
     });
   } else {
-    this.initializeForm(done);
+
+    try  {
+      this.initializeForm(done);
+
+    } catch (error) {
+      done(error);
+    }
   }
 };
 
@@ -1513,11 +2220,13 @@ CamundaForm.prototype.renderForm = function(formHtmlSource) {
   $(this.containerElement).html('').append('<div class="injected-form-wrapper">'+formHtmlSource+'</div>');
 
   // extract and validate form element
-  this.formElement = $("form", this.containerElement);
-  if(this.formElement.length !== 1) {
+  var formElement = this.formElement = $("form", this.containerElement);
+  if(formElement.length !== 1) {
     throw new Error("Form must provide exaclty one element <form ..>");
   }
-
+  if(!formElement.attr('name')) {
+    formElement.attr('name', '$$camForm');
+  }
 };
 
 
@@ -1527,9 +2236,18 @@ CamundaForm.prototype.renderForm = function(formHtmlSource) {
  */
 CamundaForm.prototype.initializeForm = function(done) {
   var self = this;
-  for(var FieldHandler in this.formFieldHandlers) {
-    this.initializeHandler(this.formFieldHandlers[FieldHandler]);
-  }
+
+  // handle form scripts
+  this.initializeFormScripts();
+
+  // initialize field handlers
+  this.initializeFieldHandlers();
+
+  // execute the scripts
+  this.executeFormScripts();
+
+  // fire form loaded
+  this.fireEvent('form-loaded');
 
   this.fetchVariables(function(err, result) {
     if (err) {
@@ -1539,30 +2257,247 @@ CamundaForm.prototype.initializeForm = function(done) {
     // merge the variables
     self.mergeVariables(result);
 
+    // retain original server values for dirty checking
+    self.storeOriginalValues(result);
+
+    // fire variables fetched
+    self.fireEvent('variables-fetched');
+
+    // restore variables from local storage
+    self.restore();
+
+    // fire variables-restored
+    self.fireEvent('variables-restored');
+
     // apply the variables to the form fields
     self.applyVariables();
 
+    // fire variables applied
+    self.fireEvent('variables-applied');
+
     // invoke callback
-    done();
+    done(null, self);
   });
+};
+
+CamundaForm.prototype.initializeFieldHandlers = function() {
+  for(var FieldHandler in this.formFieldHandlers) {
+    this.initializeHandler(this.formFieldHandlers[FieldHandler]);
+  }
+};
+
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
+ */
+CamundaForm.prototype.initializeFormScripts = function() {
+  var formScriptElements = $( 'script['+constants.DIRECTIVE_CAM_SCRIPT+']', this.formElement);
+  for(var i = 0; i<formScriptElements.length; i++) {
+    this.scripts.push(formScriptElements[i].text);
+  }
+};
+
+CamundaForm.prototype.executeFormScripts = function() {
+  for(var i = 0; i<this.scripts.length; i++) {
+    this.executeFormScript(this.scripts[i]);
+  }
+};
+
+CamundaForm.prototype.executeFormScript = function(script) {
+  (function(camForm) {
+
+    /* jshint evil: true */
+    eval(script);
+    /* jshint evil: false */
+
+  })(this);
 };
 
 
 
 /**
  * @memberof CamSDK.form.CamundaForm.prototype
+ *
+ * Store the state of the form to localStorage.
+ *
+ * You can prevent further execution by hooking
+ * the `store` event and set `storePrevented` to
+ * something truthy.
+ */
+CamundaForm.prototype.store = function(callback) {
+  var formId = this.taskId || this.processDefinitionId || this.caseInstanceId;
+
+  if (!formId) {
+    if(typeof callback === "function") {
+      return callback(new Error('Cannot determine the storage ID'));
+    } else {
+      throw new Error('Cannot determine the storage ID');
+    }
+  }
+
+  this.storePrevented = false;
+  this.fireEvent('store');
+  if(!!this.storePrevented) {
+    return;
+  }
+
+  try {
+    // get values from form fields
+    this.retrieveVariables();
+
+    // build the local storage object
+    var store = {date: Date.now(), vars: {}};
+    for(var name in this.variableManager.variables) {
+      store.vars[name] = this.variableManager.variables[name].value;
+    }
+
+    // store it
+    localStorage.setItem('camForm:'+ formId, JSON.stringify(store));
+  }
+  catch (error) {
+    if(typeof callback === "function") {
+      return callback(error);
+    } else {
+      throw error;
+    }
+  }
+  this.fireEvent('variables-stored');
+  if(typeof callback === "function") {
+    callback();
+  }
+};
+
+
+
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
+ * @return {Boolean} `true` if there is something who can be restored
+ */
+CamundaForm.prototype.isRestorable = function() {
+  var formId = this.taskId || this.processDefinitionId || this.caseInstanceId;
+
+  if (!formId) {
+    throw new Error('Cannot determine the storage ID');
+  }
+
+  // verify the presence of an entry
+  if (!localStorage.getItem('camForm:'+ formId)) {
+    return false;
+  }
+
+  // unserialize
+  var stored = localStorage.getItem('camForm:'+ formId);
+  try  {
+    stored = JSON.parse(stored);
+  }
+  catch (error) {
+    return false;
+  }
+
+  // check the content
+  if (!stored || !Object.keys(stored).length) {
+    return false;
+  }
+
+  return true;
+};
+
+
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
+ *
+ * Restore the state of the form from localStorage.
+ *
+ * You can prevent further execution by hooking
+ * the `restore` event and set `restorePrevented` to
+ * something truthy.
+ */
+CamundaForm.prototype.restore = function(callback) {
+  var stored;
+  var vars = this.variableManager.variables;
+  var formId = this.taskId || this.processDefinitionId || this.caseDefinitionId;
+
+  if (!formId) {
+    if(typeof callback === "function") {
+      return callback(new Error('Cannot determine the storage ID'));
+    } else {
+      throw new Error('Cannot determine the storage ID');
+    }
+  }
+
+
+  // no need to go further if there is nothing to restore
+  if (!this.isRestorable()) {
+    if(typeof callback === "function") {
+      return callback();
+    }
+    return;
+  }
+
+  try {
+    // retrieve the values from localStoarge
+    stored = localStorage.getItem('camForm:'+ formId);
+    stored = JSON.parse(stored).vars;
+  }
+  catch (error) {
+    if(typeof callback === "function") {
+      return callback(error);
+    } else {
+      throw error;
+    }
+  }
+
+  // merge the stored values on the variableManager.variables
+  for (var name in stored) {
+    if (vars[name]) {
+      vars[name].value = stored[name];
+    }
+    else {
+      vars[name] = {
+        name: name,
+        value: stored[name]
+      };
+    }
+  }
+
+  if(typeof callback === "function") {
+    callback();
+  }
+
+};
+
+
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
  */
 CamundaForm.prototype.submit = function(callback) {
+  var formId = this.taskId || this.processDefinitionId;
 
-  // get values from form fields
-  this.retrieveVariables();
+  // fire submit event (event handler may prevent submit from being performed)
+  this.submitPrevented = false;
+  this.fireEvent('submit');
+  if (!!this.submitPrevented) {
+    return;
+  }
 
+  try {
+    // get values from form fields
+    this.retrieveVariables();
+  } catch (error) {
+    return callback(error);
+  }
+
+  // clear the local storage for this form
+  localStorage.removeItem('camForm:'+ formId);
+
+  var self = this;
   // submit the form variables
   this.submitVariables(function(err, result) {
     if(err) {
+      self.fireEvent('submit-failed', err);
       return callback(err);
     }
 
+    self.fireEvent('submit-success');
     callback(null, result);
   });
 };
@@ -1574,19 +2509,27 @@ CamundaForm.prototype.submit = function(callback) {
  */
 CamundaForm.prototype.fetchVariables = function(done) {
   done = done || function(){};
-  var data = {
-    names: this.variableManager.variableNames()
-  };
+  var names = this.variableManager.variableNames();
+  if (names.length) {
 
-  // pass either the taskId, processDefinitionId or processDefinitionKey
-  if (this.taskId) {
-    data.id = this.taskId;
-    this.client.resource('task').formVariables(data, done);
+    var data = {
+      names: names,
+      deserializeValue: false
+    };
+
+    // pass either the taskId, processDefinitionId or processDefinitionKey
+    if (this.taskId) {
+      data.id = this.taskId;
+      this.client.resource('task').formVariables(data, done);
+    }
+    else {
+      data.id = this.processDefinitionId;
+      data.key = this.processDefinitionKey;
+      this.client.resource('process-definition').formVariables(data, done);
+    }
   }
   else {
-    data.id = this.processDefinitionId;
-    data.key = this.processDefinitionKey;
-    this.client.resource('process-definition').formVariables(data, done);
+    done();
   }
 };
 
@@ -1598,15 +2541,25 @@ CamundaForm.prototype.fetchVariables = function(done) {
 CamundaForm.prototype.submitVariables = function(done) {
   done = done || function() {};
 
-  var vars = this.variableManager.variables;
+  var varManager = this.variableManager;
+  var vars = varManager.variables;
 
   var variableData = {};
   for(var v in vars) {
     // only submit dirty variables
-    if(!!vars[v].isDirty) {
+    // LIMITATION: dirty checking is not performed for complex object variables
+    if(varManager.isDirty(v)) {
+      var val = vars[v].value;
+      // if variable is JSON, serialize
+
+      if(varManager.isJsonVariable(v)) {
+        val = JSON.stringify(val);
+      }
+
       variableData[v] = {
-        value: vars[v].value,
-        type: vars[v].type
+        value: val,
+        type: vars[v].type,
+        valueInfo: vars[v].valueInfo
       };
     }
   }
@@ -1623,11 +2576,16 @@ CamundaForm.prototype.submitVariables = function(done) {
     data.key = this.processDefinitionKey;
     this.client.resource('process-definition').submitForm(data, done);
   }
-
-
 };
 
-
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
+ */
+CamundaForm.prototype.storeOriginalValues = function(variables) {
+  for(var v in variables) {
+    this.variableManager.setOriginalValue(v, variables[v].value);
+  }
+};
 
 /**
  * @memberof CamSDK.form.CamundaForm.prototype
@@ -1645,6 +2603,11 @@ CamundaForm.prototype.mergeVariables = function(variables) {
     else {
       vars[v] = variables[v];
     }
+    // check whether the variable provides JSON payload. If true, deserialize
+    if(this.variableManager.isJsonVariable(v)) {
+      vars[v].value = JSON.parse(variables[v].value);
+    }
+    this.variableManager.isVariablesFetched = true;
   }
 };
 
@@ -1667,14 +2630,17 @@ CamundaForm.prototype.applyVariables = function() {
  * @memberof CamSDK.form.CamundaForm.prototype
  */
 CamundaForm.prototype.retrieveVariables = function() {
-
   for (var i in this.fields) {
     this.fields[i].getValue();
   }
-
 };
 
-
+/**
+ * @memberof CamSDK.form.CamundaForm.prototype
+ */
+CamundaForm.prototype.fireEvent = function(eventName, obj) {
+  this.trigger(eventName, obj);
+};
 
 /**
  * @memberof CamSDK.form.CamundaForm
@@ -1684,6 +2650,24 @@ CamundaForm.$ = $;
 CamundaForm.VariableManager = VariableManager;
 CamundaForm.fields = {};
 CamundaForm.fields.InputFieldHandler = InputFieldHandler;
+CamundaForm.fields.ChoicesFieldHandler = ChoicesFieldHandler;
+
+/**
+ * @memberof CamSDK.form.CamundaForm
+ */
+CamundaForm.cleanLocalStorage = function(timestamp) {
+  for (var i = 0; i < localStorage.length; i++) {
+    var key = localStorage.key(i);
+    if(key.indexOf('camForm:') === 0) {
+      var item = JSON.parse(localStorage.getItem(key));
+      if(item.date < timestamp) {
+        localStorage.removeItem(key);
+        i--;
+      }
+    }
+  }
+};
+
 
 /**
  * @memberof CamSDK.form.CamundaForm
@@ -1696,16 +2680,18 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":9,"./controls/choices-field-handler":14,"./controls/input-field-handler":15,"./dom-lib":16,"./variable-manager":19}],12:[function(_dereq_,module,exports){
+},{"./../base-class":14,"./../events":15,"./constants":17,"./controls/choices-field-handler":19,"./controls/input-field-handler":20,"./dom-lib":21,"./variable-manager":24}],17:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
   DIRECTIVE_CAM_FORM : 'cam-form',
   DIRECTIVE_CAM_VARIABLE_NAME : 'cam-variable-name',
-  DIRECTIVE_CAM_VARIABLE_TYPE : 'cam-variable-type'
+  DIRECTIVE_CAM_VARIABLE_TYPE : 'cam-variable-type',
+  DIRECTIVE_CAM_CHOICES : 'cam-choices',
+  DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],13:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var BaseClass = _dereq_('../../base-class');
@@ -1778,7 +2764,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":9,"./../dom-lib":16}],14:[function(_dereq_,module,exports){
+},{"../../base-class":14,"./../dom-lib":21}],19:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -1802,12 +2788,18 @@ var ChoicesFieldHandler = AbstractFormField.extend(
     // read variable definitions from markup
     var variableName = this.variableName = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
     var variableType = this.variableType = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE);
+    var choicesVariableName = this.choicesVariableName = this.element.attr(constants.DIRECTIVE_CAM_CHOICES);
 
     // crate variable
     this.variableManager.createVariable({
       name: variableName,
       type: variableType
     });
+
+    // fetch choices variable
+    if(!!choicesVariableName) {
+      this.variableManager.fetchVariable(choicesVariableName);
+    }
 
     // remember the original value found in the element for later checks
     this.originalValue = this.element.val() || '';
@@ -1826,11 +2818,47 @@ var ChoicesFieldHandler = AbstractFormField.extend(
    * @return {CamSDK.form.ChoicesFieldHandler} Chainable method.
    */
   applyValue: function() {
+
+    var selectedIndex = this.element[0].selectedIndex;
+    // if cam-choices variable is defined, apply options
+    if(!!this.choicesVariableName) {
+      var choicesVariableValue = this.variableManager.variableValue(this.choicesVariableName);
+      if(!!choicesVariableValue) {
+        // array
+        if (choicesVariableValue instanceof Array) {
+          for(var i = 0; i < choicesVariableValue.length; i++) {
+            var val = choicesVariableValue[i];
+            if(!this.element.find('option[text="'+val+'"]').length) {
+              this.element.append($('<option>', {
+                value: val,
+                text: val
+              }));
+            }
+          }
+        // object aka map
+        } else {
+          for (var p in choicesVariableValue) {
+            if(!this.element.find('option[value="'+p+'"]').length) {
+              this.element.append($('<option>', {
+                value: p,
+                text: choicesVariableValue[p]
+              }));
+            }
+          }
+        }
+      }
+    }
+
+    // make sure selected index is retained
+    this.element[0].selectedIndex = selectedIndex;
+
+    // select option referenced in cam-variable-name (if any)
     this.previousValue = this.element.val() || '';
     var variableValue = this.variableManager.variableValue(this.variableName);
     if (variableValue !== this.previousValue) {
       // write value to html control
       this.element.val(variableValue);
+      this.element.trigger('camFormVariableApplied', variableValue);
     }
 
     return this;
@@ -1872,14 +2900,16 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":12,"./../dom-lib":16,"./abstract-form-field":13}],15:[function(_dereq_,module,exports){
+},{"./../constants":17,"./../dom-lib":21,"./abstract-form-field":18}],20:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
     AbstractFormField = _dereq_('./abstract-form-field'),
     $ = _dereq_('./../dom-lib');
 
-
+var isBooleanCheckbox = function(element) {
+  return element.attr('type') === "checkbox" && element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE) === "Boolean";
+};
 
 /**
  * A field control handler for simple text / string values
@@ -1921,11 +2951,11 @@ var InputFieldHandler = AbstractFormField.extend(
    * @return {CamSDK.form.InputFieldHandler} Chainable method
    */
   applyValue: function() {
-    this.previousValue = this.element.val() || '';
+    this.previousValue = this.getValueFromHtmlControl() || '';
     var variableValue = this.variableManager.variableValue(this.variableName);
     if (variableValue !== this.previousValue) {
       // write value to html control
-      this.element.val(variableValue);
+      this.applyValueToHtmlControl(variableValue);
       this.element.trigger('camFormVariableApplied', variableValue);
     }
 
@@ -1939,12 +2969,29 @@ var InputFieldHandler = AbstractFormField.extend(
    * @return {*}
    */
   getValue: function() {
-    // read value from html control
-    var value = this.element.val();
+    var value = this.getValueFromHtmlControl();
+
     // write value to variable
     this.variableManager.variableValue(this.variableName, value);
 
     return value;
+  },
+
+  getValueFromHtmlControl: function() {
+    if(isBooleanCheckbox(this.element)) {
+      return this.element.prop("checked");
+    } else {
+      return this.element.val();
+    }
+  },
+
+  applyValueToHtmlControl: function(variableValue) {
+    if(isBooleanCheckbox(this.element)) {
+      this.element.prop("checked", variableValue);
+    } else {
+      this.element.val(variableValue);
+    }
+
   }
 
 },
@@ -1959,7 +3006,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":12,"./../dom-lib":16,"./abstract-form-field":13}],16:[function(_dereq_,module,exports){
+},{"./../constants":17,"./../dom-lib":21,"./abstract-form-field":18}],21:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -1974,12 +3021,12 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],17:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 
 
 module.exports = _dereq_('./camunda-form');
 
-},{"./camunda-form":11}],18:[function(_dereq_,module,exports){
+},{"./camunda-form":16}],23:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -1990,22 +3037,21 @@ var BOOLEAN_PATTERN = /^(true|false)$/;
 
 var DATE_PATTERN = /^(\d{2}|\d{4})(?:\-)([0]{1}\d{1}|[1]{1}[0-2]{1})(?:\-)([0-2]{1}\d{1}|[3]{1}[0-1]{1})T(?:\s)?([0-1]{1}\d{1}|[2]{1}[0-3]{1}):([0-5]{1}\d{1}):([0-5]{1}\d{1})?$/;
 
-
-function isInteger(value) {
-  return INTEGER_PATTERN.test(value);
-}
-
-function isFloat(value) {
-  return FLOAT_PATTERN.test(value);
-}
-
-function isBoolean(value) {
-  return BOOLEAN_PATTERN.test(value);
-}
-
-function isDate(value) {
-  return DATE_PATTERN.test(value);
-}
+var isType = function(value, type) {
+  switch(type) {
+    case 'Integer':
+    case 'Long':
+    case 'Short':
+      return INTEGER_PATTERN.test(value);
+    case 'Float':
+    case 'Double':
+      return FLOAT_PATTERN.test(value);
+    case 'Boolean':
+      return BOOLEAN_PATTERN.test(value);
+    case 'Date':
+      return DATE_PATTERN.test(value);
+  }
+};
 
 var convertToType = function(value, type) {
 
@@ -2015,45 +3061,34 @@ var convertToType = function(value, type) {
 
   if(type === "String") {
     return value;
-
-  } else if(type === "Integer") {
-    if(isInteger(value)) {
-      return parseInt(value);
-    } else {
-      throw Error("Value '"+value+"' is not an Integer");
+  } else if (isType(value, type)) {
+    switch(type) {
+      case 'Integer':
+      case 'Long':
+      case 'Short':
+        return parseInt(value, 10);
+      case 'Float':
+      case 'Double':
+        return parseFloat(value);
+      case 'Boolean':
+        return "true" === value;
+      case 'Date':
+        return value;
     }
-
-  } else if(type === "Float") {
-    if(isFloat(value)) {
-      return parseFloat(value);
-    } else {
-      throw Error("Value '"+value+"' is not a Float");
-    }
-    return isFloat(value);
-
-  } else if(type === "Boolean") {
-    if(isBoolean(value)) {
-      return "true" === value;
-    } else {
-      throw Error("Value '"+value+"' is not a Boolean");
-    }
-
-  } else if(type === "Date") {
-    if(isDate(value)) {
-      return value;
-    } else {
-      throw Error("Value '"+value+"' is not a Date");
-    }
+  } else {
+    throw new Error("Value '"+value+"' is not of type "+type);
   }
-
 };
 
-module.exports = convertToType;
+module.exports = {
+  convertToType : convertToType,
+  isType : isType
+};
 
-},{}],19:[function(_dereq_,module,exports){
+},{}],24:[function(_dereq_,module,exports){
 'use strict';
 
-var convertToType = _dereq_('./type-util');
+var convertToType = _dereq_('./type-util').convertToType;
 
 /**
  * @class
@@ -2074,7 +3109,17 @@ function VariableManager() {
   /** @member object containing the form fields. Initially empty. */
   this.variables = { };
 
+  /** @member boolean indicating whether the variables are fetched */
+  this.isVariablesFetched = false;
+
 }
+
+VariableManager.prototype.fetchVariable = function(variable) {
+  if(this.isVariablesFetched) {
+    throw new Error('Illegal State: cannot call fetchVariable(), variables already fetched.');
+  }
+  this.createVariable({ name: variable });
+};
 
 VariableManager.prototype.createVariable = function(variable) {
   if(!this.variables[variable.name]) {
@@ -2092,6 +3137,15 @@ VariableManager.prototype.destroyVariable = function(variableName) {
   }
 };
 
+VariableManager.prototype.setOriginalValue = function(variableName, value) {
+  if(!!this.variables[variableName]) {
+    this.variables[variableName].originalValue = value;
+  } else {
+    throw new Error('Cannot set original value of variable with name '+variableName+': variable does not exist.');
+  }
+
+};
+
 VariableManager.prototype.variable = function(variableName) {
   return this.variables[variableName];
 };
@@ -2107,21 +3161,33 @@ VariableManager.prototype.variableValue = function(variableName, value) {
     // convert empty string to null for all types except String
     value = null;
 
-  } else {
+  } else if(typeof value === "string" && variable.type !== "String") {
     // convert string value into model value
     value = convertToType(value, variable.type);
 
   }
 
   if(arguments.length === 2) {
-    variable.isDirty = true;
-    if(variable.value === value) {
-      variable.isDirty = false;
-    }
     variable.value = value;
   }
 
   return variable.value;
+};
+
+VariableManager.prototype.isDirty = function(name) {
+  var variable = this.variable(name);
+  if(this.isJsonVariable(name)) {
+    return variable.originalValue !== JSON.stringify(variable.value);
+  } else {
+    return variable.originalValue !== variable.value || variable.type === "Object";
+  }
+};
+
+VariableManager.prototype.isJsonVariable = function(name) {
+  var variable = this.variable(name);
+
+  return variable.type === "Object" &&
+     variable.valueInfo.serializationDataFormat.indexOf("application/json") !== -1;
 };
 
 VariableManager.prototype.variableNames = function() {
@@ -2132,16 +3198,142 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":18}],20:[function(_dereq_,module,exports){
+},{"./type-util":23}],25:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
   Client: _dereq_('./api-client'),
-  Form: _dereq_('./forms')
+  Form:   _dereq_('./forms'),
+  utils:  _dereq_('./utils')
 };
 
 
-},{"./api-client":3,"./forms":17}],21:[function(_dereq_,module,exports){
+},{"./api-client":3,"./forms":22,"./utils":26}],26:[function(_dereq_,module,exports){
+'use strict';
+
+
+/**
+ * @exports CamSDK.utils
+ */
+var utils = module.exports = {"typeUtils" : _dereq_('./forms/type-util')};
+
+utils.solveHALEmbedded = function(results) {
+
+  function isId(str) {
+    if (str.slice(-2) !== 'Id') { return false; }
+
+    var prop = str.slice(0, -2);
+    var embedded = results._embedded;
+    return !!(embedded[prop] && !!embedded[prop].length);
+  }
+
+  function keys(obj) {
+    var arr = Object.keys(obj);
+
+    for (var a in arr) {
+      if (arr[a][0] === '_' || !isId(arr[a])) {
+        arr.splice(a, 1);
+      }
+    }
+
+    return arr;
+  }
+
+  var _embeddedRessources = Object.keys(results._embedded);
+  for (var r in _embeddedRessources) {
+    var name = _embeddedRessources[r];
+
+    for (var i in results._embedded[name]) {
+      results._embedded[name][i]._embedded = results._embedded[name][i]._embedded || {};
+
+      var properties = keys(results._embedded[name][i]);
+
+      for (var p in properties) {
+        var prop = properties[p];
+        if (results._embedded[name][i][prop]) {
+          var embedded = results._embedded[prop.slice(0, -2)];
+          for (var e in embedded) {
+            if (embedded[e].id === results._embedded[name][i][prop]) {
+              results._embedded[name][i]._embedded[prop.slice(0, -2)] = [embedded[e]];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return results;
+};
+
+
+// the 2 folowing functions were borrowed from async.js
+// https://github.com/caolan/async/blob/master/lib/async.js
+
+function _eachSeries(arr, iterator, callback) {
+  callback = callback || function () {};
+  if (!arr.length) {
+    return callback();
+  }
+  var completed = 0;
+  var iterate = function () {
+    iterator(arr[completed], function (err) {
+      if (err) {
+        callback(err);
+        callback = function () {};
+      }
+      else {
+        completed += 1;
+        if (completed >= arr.length) {
+          callback();
+        }
+        else {
+          iterate();
+        }
+      }
+    });
+  };
+  iterate();
+}
+
+/**
+ * Executes functions in serie
+ *
+ * @param  {(Object.<String, Function>|Array.<Function>)} tasks object or array of functions
+ *                                                              taking a callback
+ *
+ * @param  {Function} callback                                  executed at the end, first argument
+ *                                                              will be an error (if error occured),
+ *                                                              the second depends on "tasks" type
+ *
+ * @example
+ * CamSDK.utils.series({
+ *   a: function(cb) { setTimeout(function() { cb(null, 1); }, 1); },
+ *   b: function(cb) { setTimeout(function() { cb(new Error('Bang!')); }, 1); },
+ *   c: function(cb) { setTimeout(function() { cb(null, 3); }, 1); }
+ * }, function(err, result) {
+ *   // err will be passed
+ *   // result will be { a: 1, b: undefined }
+ * });
+ */
+utils.series = function(tasks, callback) {
+  callback = callback || function () {};
+
+  var results = {};
+  _eachSeries(Object.keys(tasks), function (k, callback) {
+    tasks[k](function (err) {
+      var args = Array.prototype.slice.call(arguments, 1);
+      if (args.length <= 1) {
+        args = args[0];
+      }
+      results[k] = args;
+      callback(err);
+    });
+  }, function (err) {
+    callback(err, results);
+  });
+};
+
+},{"./forms/type-util":23}],27:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -3192,7 +4384,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":22,"reduce":23}],22:[function(_dereq_,module,exports){
+},{"emitter":28,"reduce":29}],28:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -3358,7 +4550,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],23:[function(_dereq_,module,exports){
+},{}],29:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
@@ -3383,6 +4575,6 @@ module.exports = function(arr, fn, initial){
   
   return curr;
 };
-},{}]},{},[20])
-(20)
+},{}]},{},[25])
+(25)
 });
