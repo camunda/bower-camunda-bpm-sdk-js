@@ -1222,10 +1222,16 @@ var ProcessDefinition = AbstractClientResource.extend(
       return done(new Error('Process definition task variables needs either a key or an id.'));
     }
 
+    var queryData = {
+      deserializeValues: data.deserializeValues
+    };
+
+    if(data.names) {
+      queryData.variableNames = (data.names || []).join(',');
+    }
+
     return this.http.get(this.path +'/'+ pointer +'/form-variables', {
-      data: {
-        variableNames: (data.names || []).join(',')
-      },
+      data: queryData,
       done: done || function() {}
     });
   },
@@ -1764,11 +1770,16 @@ Task.formVariables = function(data, done) {
     return done(new Error('Task variables needs either a key or an id.'));
   }
 
+  var queryData = {
+    deserializeValues: data.deserializeValues
+  };
+
+  if(data.names) {
+    queryData.variableNames = data.names.join(',');
+  }
+
   return this.http.get(this.path +'/'+ pointer +'/form-variables', {
-    data: {
-      variableNames: (data.names || []).join(','),
-      deserializeValue: data.deserializeValue
-    },
+    data: queryData,
     done: done || function() {}
   });
 };
@@ -2514,7 +2525,7 @@ CamundaForm.prototype.fetchVariables = function(done) {
 
     var data = {
       names: names,
-      deserializeValue: false
+      deserializeValues: false
     };
 
     // pass either the taskId, processDefinitionId or processDefinitionKey
@@ -3239,7 +3250,7 @@ utils.solveHALEmbedded = function(results) {
     return arr;
   }
 
-  var _embeddedRessources = Object.keys(results._embedded);
+  var _embeddedRessources = Object.keys(results._embedded || {});
   for (var r in _embeddedRessources) {
     var name = _embeddedRessources[r];
 
