@@ -383,6 +383,7 @@ module.exports = HttpClient;
 
 },{"./../events":15,"./../utils":26,"superagent":27}],3:[function(_dereq_,module,exports){
 'use strict';
+var Events = _dereq_('./../events');
 
 /**
  * For all API client related
@@ -412,6 +413,8 @@ function CamundaClient(config) {
   if (!config.apiUri) {
     throw new Error('An apiUri is required');
   }
+
+  Events.attach(this);
 
   config.engine = config.engine || 'default';
 
@@ -542,7 +545,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./http-client":2,"./resources/authorization":4,"./resources/case-definition":5,"./resources/case-execution":6,"./resources/case-instance":7,"./resources/filter":8,"./resources/history":9,"./resources/process-definition":10,"./resources/process-instance":11,"./resources/task":12,"./resources/variable":13}],4:[function(_dereq_,module,exports){
+},{"./../events":15,"./http-client":2,"./resources/authorization":4,"./resources/case-definition":5,"./resources/case-execution":6,"./resources/case-instance":7,"./resources/filter":8,"./resources/history":9,"./resources/process-definition":10,"./resources/process-instance":11,"./resources/task":12,"./resources/variable":13}],4:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -1389,10 +1392,71 @@ var ProcessInstance = AbstractClientResource.extend(
    * Get a list of process instances
    *
    * @param  {Object}   params
+   * @param {String} [params.processInstanceIds]      Filter by a comma-separated list of process
+   *                                                  instance ids.
+   * @param {String} [params.businessKey]             Filter by process instance business key.
+   * @param {String} [params.caseInstanceId]          Filter by case instance id.
+   * @param {String} [params.processDefinitionId]     Filter by the process definition the
+   *                                                  instances run on.
+   * @param {String} [params.processDefinitionKey]    Filter by the key of the process definition
+   *                                                  the instances run on.
+   * @param {String} [params.superProcessInstance]    Restrict query to all process instances that
+   *                                                  are sub process instances of the given process
+   *                                                  instance. Takes a process instance id.
+   * @param {String} [params.subProcessInstance]      Restrict query to all process instances that
+   *                                                  have the given process instance as a sub
+   *                                                  process instance. Takes a process instance id.
+   * @param {String} [params.active]                  Only include active process instances.
+   *                                                  Values may be true or false.
+   * @param {String} [params.suspended]               Only include suspended process instances.
+   *                                                  Values may be true or false.
+   * @param {String} [params.incidentId]              Filter by the incident id.
+   * @param {String} [params.incidentType]            Filter by the incident type.
+   * @param {String} [params.incidentMessage]         Filter by the incident message. Exact match.
+   * @param {String} [params.incidentMessageLike]     Filter by the incident message that the
+   *                                                  parameter is a substring of.
+   * @param {String} [params.variables]               Only include process instances that have
+   *                                                  variables with certain values.
+   *                                                  Variable filtering expressions are
+   *                                                  comma-separated and are structured as follows:
+   *                                                  A valid parameter value has the form
+   *                                                  key_operator_value. key is the variable name,
+   *                                                  operator is the comparison operator to be used
+   *                                                  and value the variable value.
+   *                                                  Note: Values are always treated as String
+   *                                                  objects on server side.
+   *                                                  Valid operator values are:
+   *                                                  - eq - equal to;
+   *                                                  - neq - not equal to;
+   *                                                  - gt - greater than;
+   *                                                  - gteq - greater than or equal to;
+   *                                                  - lt - lower than;
+   *                                                  - lteq - lower than or equal to;
+   *                                                  - like.
+   *                                                  key and value may not contain underscore or
+   *                                                  comma characters.
+   * @param {String} [params.sortBy]                  Sort the results lexicographically by a given
+   *                                                  criterion.
+   *                                                  Valid values are:
+   *                                                  - instanceId
+   *                                                  - definitionKey
+   *                                                  - definitionId.
+   *                                                  Must be used in conjunction with the sortOrder
+   *                                                  parameter.
+   * @param {String} [params.sortOrder]               Sort the results in a given order.
+   *                                                  Values may be asc for ascending order
+   *                                                  or desc for descending order.
+   *                                                  Must be used in conjunction with sortBy param.
+   * @param {String} [params.firstResult]             Pagination of results. Specifies the index of
+   *                                                  the first result to return.
+   * @param {String} [params.maxResults]              Pagination of results. Specifies the maximum
+   *                                                  number of results to return.
+   *                                                  Will return less results if there are no more
+   *                                                  results left.
    * @param  {requestCallback} [done]
    */
   list: function(params, done) {
-    return this.list(params, done);
+    AbstractClientResource.list.apply(this, arguments);
   }
 });
 
