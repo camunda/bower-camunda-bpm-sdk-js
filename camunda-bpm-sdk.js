@@ -2269,7 +2269,8 @@ CamundaForm.prototype.initialize = function(done) {
         } catch (error) {
           done(error);
         }
-      }
+      },
+      data: { noCache: Date.now() }
     });
   } else {
 
@@ -2883,8 +2884,6 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 
     // remember variable name
     this.variableName = variableName;
-
-    this.getValue();
   },
 
   /**
