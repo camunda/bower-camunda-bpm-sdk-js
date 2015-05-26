@@ -1912,7 +1912,7 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {Function} [done]
    */
   xml: function(data, done) {
-    var path = this.path +'/'+ (data.key ? 'key/'+ data.key : data.id) +'/xml';
+    var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/xml';
     return this.http.get(path, {
       done: done || noop
     });
