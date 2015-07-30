@@ -400,7 +400,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"./../events":21,"./../utils":32,"buffer":33,"superagent":37}],3:[function(_dereq_,module,exports){
+},{"./../events":21,"./../utils":33,"buffer":34,"superagent":38}],3:[function(_dereq_,module,exports){
 'use strict';
 var Events = _dereq_('./../events');
 
@@ -2303,6 +2303,11 @@ Task.identityLinks = function(taskId, done) {
  * @param  {Function} done
  */
 Task.identityLinksAdd = function(taskId, params, done) {
+    if (arguments.length === 2) {
+    done = arguments[1];
+    params = arguments[0];
+    taskId = params.id;
+  }
   return this.http.post(this.path +'/'+ taskId + '/identity-links', {
     data: params,
     done: done
@@ -2319,6 +2324,12 @@ Task.identityLinksAdd = function(taskId, params, done) {
  * @param  {Function} done
  */
 Task.identityLinksDelete = function(taskId, params, done) {
+  if (arguments.length === 2) {
+    done = arguments[1];
+    params = arguments[0];
+    taskId = params.id;
+  }
+
   return this.http.post(this.path +'/'+ taskId + '/identity-links/delete', {
     data: params,
     done: done
@@ -3207,6 +3218,8 @@ var InputFieldHandler = _dereq_('./controls/input-field-handler');
 
 var ChoicesFieldHandler = _dereq_('./controls/choices-field-handler');
 
+var FileDownloadHandler = _dereq_('./controls/file-download-handler');
+
 var BaseClass = _dereq_('./../base-class');
 
 var constants = _dereq_('./constants');
@@ -3249,6 +3262,9 @@ function CamundaForm(options) {
   }
 
   this.taskId = options.taskId;
+  if(!!this.taskId) {
+    this.taskBasePath = this.client.baseUrl + "/task/" + this.taskId;
+  }
   this.processDefinitionId = options.processDefinitionId;
   this.processDefinitionKey = options.processDefinitionKey;
 
@@ -3278,7 +3294,8 @@ function CamundaForm(options) {
    */
   this.formFieldHandlers = options.formFieldHandlers || [
     InputFieldHandler,
-    ChoicesFieldHandler
+    ChoicesFieldHandler,
+    FileDownloadHandler
   ];
 
   this.businessKey = null;
@@ -3301,6 +3318,7 @@ function CamundaForm(options) {
 CamundaForm.prototype.initializeHandler = function(FieldHandler) {
   var self = this;
   var selector = FieldHandler.selector;
+
   $(selector, self.formElement).each(function() {
     self.fields.push(new FieldHandler(this, self.variableManager));
   });
@@ -3676,7 +3694,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
         }
         var reader = new FileReader();
         /* jshint ignore:start */
-        reader.onloadend = (function(i) {
+        reader.onloadend = (function(i, element) {
           return function(e) {
             var binary = '';
             var bytes = new Uint8Array( e.target.result );
@@ -3684,10 +3702,20 @@ CamundaForm.prototype.transformFiles = function(callback) {
             for (var j = 0; j < len; j++) {
                 binary += String.fromCharCode( bytes[ j ] );
             }
-            that.variableManager.variables[that.fields[i].variableName].value = btoa(binary);
+            var fileVar = that.variableManager.variables[that.fields[i].variableName];
+            fileVar.value = btoa(binary);
+
+            // set file metadata as value info 
+            if(fileVar.type.toLowerCase() === 'file') {
+              fileVar.valueInfo = {
+                filename: element.files[0].name,
+                mimeType: element.files[0].type
+              };
+            }
+
             callCallback();
           };
-        })(i);
+        })(i, element);
         /* jshint ignore:end */
         reader.readAsArrayBuffer(element.files[0]);
         counter++;
@@ -3808,6 +3836,13 @@ CamundaForm.prototype.mergeVariables = function(variables) {
     if(this.variableManager.isJsonVariable(v)) {
       vars[v].value = JSON.parse(variables[v].value);
     }
+
+    // generate content url for file and bytes variables
+    var type = vars[v].type;
+    if(!!this.taskBasePath && (type === "Bytes" || type === "File")) {
+      vars[v].contentUrl = this.taskBasePath + '/variables/'+ vars[v].name + "/data";
+    }
+
     this.variableManager.isVariablesFetched = true;
   }
 };
@@ -3881,13 +3916,14 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":20,"./../events":21,"./constants":23,"./controls/choices-field-handler":25,"./controls/input-field-handler":26,"./dom-lib":27,"./variable-manager":30}],23:[function(_dereq_,module,exports){
+},{"./../base-class":20,"./../events":21,"./constants":23,"./controls/choices-field-handler":25,"./controls/file-download-handler":26,"./controls/input-field-handler":27,"./dom-lib":28,"./variable-manager":31}],23:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
   DIRECTIVE_CAM_FORM : 'cam-form',
   DIRECTIVE_CAM_VARIABLE_NAME : 'cam-variable-name',
   DIRECTIVE_CAM_VARIABLE_TYPE : 'cam-variable-type',
+  DIRECTIVE_CAM_FILE_DOWNLOAD : 'cam-file-download',
   DIRECTIVE_CAM_CHOICES : 'cam-choices',
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
@@ -3965,7 +4001,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":20,"./../dom-lib":27}],25:[function(_dereq_,module,exports){
+},{"../../base-class":20,"./../dom-lib":28}],25:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -4100,7 +4136,59 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":23,"./../dom-lib":27,"./abstract-form-field":24}],26:[function(_dereq_,module,exports){
+},{"./../constants":23,"./../dom-lib":28,"./abstract-form-field":24}],26:[function(_dereq_,module,exports){
+'use strict';
+
+var constants = _dereq_('./../constants'),
+    AbstractFormField = _dereq_('./abstract-form-field'),
+    $ = _dereq_('./../dom-lib');
+
+/**
+ * A field control handler for file downloads
+ * @class
+ * @memberof CamSDK.form
+ * @augments {CamSDK.form.AbstractFormField}
+ */
+var InputFieldHandler = AbstractFormField.extend(
+{
+  /**
+   * Prepares an instance
+   */
+  initialize: function() {
+
+    this.variableName = this.element.attr(constants.DIRECTIVE_CAM_FILE_DOWNLOAD);
+
+    // fetch the variable
+    this.variableManager.fetchVariable(this.variableName);
+  },
+
+  applyValue: function() {
+
+    var variable = this.variableManager.variable(this.variableName);
+
+    // set the download url of the link
+    this.element.attr("href", variable.contentUrl);
+
+    // sets the text content of the link to the filename it the textcontent is empty    
+    if(this.element.text().trim().length === 0) {
+      this.element.text(variable.valueInfo.filename);
+    }
+
+    return this;
+  }
+
+},
+
+{
+
+  selector: 'a['+ constants.DIRECTIVE_CAM_FILE_DOWNLOAD +']'
+
+});
+
+module.exports = InputFieldHandler;
+
+
+},{"./../constants":23,"./../dom-lib":28,"./abstract-form-field":24}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -4206,7 +4294,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":23,"./../dom-lib":27,"./abstract-form-field":24}],27:[function(_dereq_,module,exports){
+},{"./../constants":23,"./../dom-lib":28,"./abstract-form-field":24}],28:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -4221,12 +4309,12 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],28:[function(_dereq_,module,exports){
+},{}],29:[function(_dereq_,module,exports){
 
 
 module.exports = _dereq_('./camunda-form');
 
-},{"./camunda-form":22}],29:[function(_dereq_,module,exports){
+},{"./camunda-form":22}],30:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -4259,7 +4347,7 @@ var convertToType = function(value, type) {
     value = value.trim();
   }
 
-  if(type === "String" || type === "Bytes") {
+  if(type === "String" || type === "Bytes" || type === "File") {
     return value;
   } else if (isType(value, type)) {
     switch(type) {
@@ -4285,7 +4373,7 @@ module.exports = {
   isType : isType
 };
 
-},{}],30:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 'use strict';
 
 var convertToType = _dereq_('./type-util').convertToType;
@@ -4405,7 +4493,7 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":29}],31:[function(_dereq_,module,exports){
+},{"./type-util":30}],32:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
@@ -4415,7 +4503,7 @@ module.exports = {
 };
 
 
-},{"./api-client":3,"./forms":28,"./utils":32}],32:[function(_dereq_,module,exports){
+},{"./api-client":3,"./forms":29,"./utils":33}],33:[function(_dereq_,module,exports){
 'use strict';
 
 
@@ -4540,7 +4628,7 @@ utils.series = function(tasks, callback) {
   });
 };
 
-},{"./forms/type-util":29}],33:[function(_dereq_,module,exports){
+},{"./forms/type-util":30}],34:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -5594,7 +5682,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":34,"ieee754":35,"is-array":36}],34:[function(_dereq_,module,exports){
+},{"base64-js":35,"ieee754":36,"is-array":37}],35:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -5716,7 +5804,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -5802,7 +5890,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],36:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 
 /**
  * isArray
@@ -5837,7 +5925,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],37:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -6920,7 +7008,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":38,"reduce":39}],38:[function(_dereq_,module,exports){
+},{"emitter":39,"reduce":40}],39:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -7086,7 +7174,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],39:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
@@ -7111,6 +7199,6 @@ module.exports = function(arr, fn, initial){
   
   return curr;
 };
-},{}]},{},[31])
-(31)
+},{}]},{},[32])
+(32)
 });
