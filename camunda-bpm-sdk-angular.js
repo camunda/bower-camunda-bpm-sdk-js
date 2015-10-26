@@ -43,7 +43,6 @@ var CamundaFormAngular = CamundaForm.extend(
     injector.invoke(['$compile', function($compile) {
       $compile(self.formElement)(scope);
     }]);
-    scope.camForm = this;
   },
 
   executeFormScript: function(script) {
@@ -109,7 +108,7 @@ var CamundaFormAngular = CamundaForm.extend(
 
 module.exports = CamundaFormAngular;
 
-},{"./../../forms/camunda-form":27,"./../../forms/constants":28}],2:[function(_dereq_,module,exports){
+},{"./../../forms/camunda-form":25,"./../../forms/constants":26}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var angular = (window.angular),
@@ -198,7 +197,7 @@ ngModule.directive('camVariableType', [function() {
 module.exports = CamundaFormAngular;
 
 
-},{"./../../forms/type-util":34,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
+},{"./../../forms/type-util":31,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
@@ -208,7 +207,7 @@ module.exports = {
 };
 
 
-},{"./../api-client":6,"./../utils":36,"./forms":2}],4:[function(_dereq_,module,exports){
+},{"./../api-client":6,"./../utils":33,"./forms":2}],4:[function(_dereq_,module,exports){
 'use strict';
 
 // var HttpClient = require('./http-client');
@@ -431,7 +430,7 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":25,"./../events":26}],5:[function(_dereq_,module,exports){
+},{"./../base-class":23,"./../events":24}],5:[function(_dereq_,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -465,7 +464,7 @@ function end(self, done) {
     // TODO: investigate the possible problems related to response without content
     if (err || (!response.ok && !response.noContent)) {
       err = err || response.error || new Error('The '+ response.req.method +' request on '+ response.req.url +' failed');
-      if (response && response.body) {
+      if (response.body) {
         if (response.body.message) {
           err.message = response.body.message;
         }
@@ -610,7 +609,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"./../events":26,"./../utils":36,"buffer":37,"superagent":41}],6:[function(_dereq_,module,exports){
+},{"./../events":24,"./../utils":33,"buffer":34,"superagent":38}],6:[function(_dereq_,module,exports){
 'use strict';
 var Events = _dereq_('./../events');
 
@@ -707,8 +706,6 @@ CamundaClient.HttpClient = _dereq_('./http-client');
     _resources['incident']            = _dereq_('./resources/incident');
     _resources['job']                 = _dereq_('./resources/job');
     _resources['metrics']             = _dereq_('./resources/metrics');
-    _resources['decision-definition'] = _dereq_('./resources/decision-definition');
-    _resources['execution']           = _dereq_('./resources/execution');
     /* jshint sub: false */
     var self = this;
 
@@ -782,7 +779,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":26,"./http-client":5,"./resources/authorization":7,"./resources/case-definition":8,"./resources/case-execution":9,"./resources/case-instance":10,"./resources/decision-definition":11,"./resources/deployment":12,"./resources/execution":13,"./resources/filter":14,"./resources/group":15,"./resources/history":16,"./resources/incident":17,"./resources/job":18,"./resources/metrics":19,"./resources/process-definition":20,"./resources/process-instance":21,"./resources/task":22,"./resources/user":23,"./resources/variable":24}],7:[function(_dereq_,module,exports){
+},{"./../events":24,"./http-client":5,"./resources/authorization":7,"./resources/case-definition":8,"./resources/case-execution":9,"./resources/case-instance":10,"./resources/deployment":11,"./resources/filter":12,"./resources/group":13,"./resources/history":14,"./resources/incident":15,"./resources/job":16,"./resources/metrics":17,"./resources/process-definition":18,"./resources/process-instance":19,"./resources/task":20,"./resources/user":21,"./resources/variable":22}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -1036,20 +1033,6 @@ CaseInstance.list = function(params, done) {
   });
 };
 
-CaseInstance.count = function(params, done) {
-  if (arguments.length === 1 && typeof params === 'function') {
-    done = params;
-    params = {};
-  }
-
-  params = params || {};
-
-  this.http.get(this.path + '/count', {
-    data: params,
-    done: done || function () {}
-  });
-};
-
 CaseInstance.close = function(instanceId, params, done) {
   this.http.post(this.path + '/' + instanceId + '/close', {
     data: params,
@@ -1060,92 +1043,6 @@ CaseInstance.close = function(instanceId, params, done) {
 module.exports = CaseInstance;
 
 },{"./../abstract-client-resource":4}],11:[function(_dereq_,module,exports){
-'use strict';
-
-var AbstractClientResource = _dereq_('./../abstract-client-resource');
-
-
-
-/**
- * DecisionDefinition Resource
- * @class
- * @memberof CamSDK.client.resource
- * @augments CamSDK.client.AbstractClientResource
- */
-var DecisionDefinition = AbstractClientResource.extend();
-
-/**
- * Path used by the resource to perform HTTP queries
- * @type {String}
- */
-DecisionDefinition.path = 'decision-definition';
-
-
-/**
- * Fetch a list of decision definitions
- * @param  {Object} params                        Query parameters as follow
- * @param  {String} [params.decisionDefinitionId] Filter by decision definition id.
- * @param  {String} [params.decisionDefinitionIdIn] Filter by decision definition ids.
- * @param  {String} [params.name]                 Filter by name.
- * @param  {String} [params.nameLike]             Filter by names that the parameter is a substring of.
- * @param  {String} [params.deploymentId]         Filter by the deployment the id belongs to.
- * @param  {String} [params.key]                  Filter by key, i.e. the id in the DMN 1.0 XML. Exact match.
- * @param  {String} [params.keyLike]              Filter by keys that the parameter is a substring of.
- * @param  {String} [params.category]             Filter by category. Exact match.
- * @param  {String} [params.categoryLike]         Filter by categories that the parameter is a substring of.
- * @param  {String} [params.version]              Filter by version.
- * @param  {String} [params.latestVersion]        Only include those decision definitions that are latest versions.
- *                                                Values may be "true" or "false".
- * @param  {String} [params.resourceName]         Filter by the name of the decision definition resource. Exact match.
- * @param  {String} [params.resourceNameLike]     Filter by names of those decision definition resources that the parameter is a substring of.
- *
- * @param  {String} [params.sortBy]               Sort the results lexicographically by a given criterion.
- *                                                Valid values are category, "key", "id", "name", "version" and "deploymentId".
- *                                                Must be used in conjunction with the "sortOrder" parameter.
- *
- * @param  {String} [params.sortOrder]            Sort the results in a given order.
- *                                                Values may be asc for ascending "order" or "desc" for descending order.
- *                                                Must be used in conjunction with the sortBy parameter.
- *
- * @param  {Integer} [params.firstResult]         Pagination of results. Specifies the index of the first result to return.
- * @param  {Integer} [params.maxResults]          Pagination of results. Specifies the maximum number of results to return.
- *                                                Will return less results, if there are no more results left.
- * @param {Function} done
- */
-DecisionDefinition.list = function(params, done) {
-  return this.http.get(this.path, {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Retrieves a single decision definition according to the DecisionDefinition interface in the engine.
- * @param  {uuid}     id   The id of the decision definition to be retrieved.
- * @param  {Function} done
- */
-DecisionDefinition.get = function(id, done) {
-  return this.http.get(this.path +'/'+ id, {
-    done: done
-  });
-};
-
-/**
- * Retrieves the DMN 1.0 XML of this decision definition.
- * @param  {uuid}     id   The id of the decision definition.
- * @param  {Function} done
- */
-DecisionDefinition.getXml = function(id, done) {
-  return this.http.get(this.path +'/'+ id + '/xml', {
-    done: done
-  });
-};
-
-
-
-module.exports = DecisionDefinition;
-
-},{"./../abstract-client-resource":4}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1182,7 +1079,6 @@ Deployment.create = function (options, done) {
   var fields = {
     'deployment-name': options.deploymentName
   };
-
   var files = Array.isArray(options.files) ?
               options.files :
               [options.files];
@@ -1203,38 +1099,7 @@ Deployment.create = function (options, done) {
   });
 };
 
-/**
- * Deletes a deployment
- *
- * @param  {String}  id
- *
- * @param  {Object}  options
- *
- * @param  {Boolean} [options.cascade]
- * @param  {Boolean} [options.skipCustomListeners]
- *
- * @param  {Function} done
- */
-Deployment.delete = function (id, options, done) {
-  var path = this.path + '/' + id;
 
-  if (options) {
-
-    var queryParams = [];
-    for(var key in options) {
-      var value = options[key];
-      queryParams.push(key + '=' + value);
-    }
-
-    if (queryParams.length) {
-      path += '?' + queryParams.join('&');
-    }
-  }
-
-  return this.http.del(path, {
-    done: done
-  });
-};
 
 /**
  * Lists the deployments
@@ -1268,71 +1133,10 @@ Deployment.list = function () {
   AbstractClientResource.list.apply(this, arguments);
 };
 
-/**
- * Returns a list of deployment resources for the given deployment.
- */
-Deployment.getResources = function(id, done) {
-  this.http.get(this.path + '/' + id + '/resources', {
-    done: done
-  });
-};
-
-/**
- * Returns a deployment resource for the given deployment and resource id.
- */
-Deployment.getResource = function(deploymentId, resourceId, done) {
-  this.http.get(this.path + '/' + deploymentId + '/resources/' + resourceId, {
-    done: done
-  });
-};
-
-/**
- * Returns the binary content of a single deployment resource for the given deployment.
- */
-Deployment.getResourceData = function(deploymentId, resourceId, done) {
-  this.http.get(this.path + '/' + deploymentId + '/resources/' + resourceId + '/data', {
-    accept: '*/*',
-    done: done
-  });
-};
 
 module.exports = Deployment;
 
-},{"./../abstract-client-resource":4}],13:[function(_dereq_,module,exports){
-'use strict';
-
-var AbstractClientResource = _dereq_('./../abstract-client-resource');
-
-
-
-/**
- * Execution Resource
- * @class
- * @memberof CamSDK.client.resource
- * @augments CamSDK.client.AbstractClientResource
- */
-var Execution = AbstractClientResource.extend();
-
-/**
- * Path used by the resource to perform HTTP queries
- * @type {String}
- */
-Execution.path = 'execution';
-
-/**
- * Deletes a variable in the context of a given execution. Deletion does not propagate upwards in the execution hierarchy.
- */
-Execution.deleteVariable = function (data, done) {
-  this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
-    data: data,
-    done: done
-  });
-};
-
-module.exports = Execution;
-
-
-},{"./../abstract-client-resource":4}],14:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1499,7 +1303,7 @@ Filter.authorizations = function(id, done) {
 module.exports = Filter;
 
 
-},{"./../abstract-client-resource":4}],15:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1668,7 +1472,7 @@ Group.delete = function (options, done) {
 
 module.exports = Group;
 
-},{"./../abstract-client-resource":4}],16:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],14:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1826,70 +1630,10 @@ History.processInstanceCount = function(params, done) {
   });
 };
 
-
-
-/**
- * Query for historic decision instances that fulfill the given parameters.
- *
- * @param  {Object}   [params]
- * @param  {uuid}     [params.decisionInstanceId]                 Filter by decision instance id.
- * @param  {String}   [params.decisionInstanceIdIn]               Filter by decision instance ids. Must be a comma-separated list of decision instance ids.
- * @param  {uuid}     [params.decisionDefinitionId]               Filter by the decision definition the instances belongs to.
- * @param  {String}   [params.decisionDefinitionKey]              Filter by the key of the decision definition the instances belongs to.
- * @param  {String}   [params.decisionDefinitionName]             Filter by the name of the decision definition the instances belongs to.
- * @param  {uuid}     [params.processDefinitionId]                Filter by the process definition the instances belongs to.
- * @param  {String}   [params.processDefinitionKey]               Filter by the key of the process definition the instances belongs to.
- * @param  {uuid}     [params.processInstanceId]                  Filter by the process instance the instances belongs to.
- * @param  {uuid}     [params.activityIdIn]                       Filter by the activity ids the instances belongs to. Must be a comma-separated list of acitvity ids.
- * @param  {String}   [params.activityInstanceIdIn]               Filter by the activity instance ids the instances belongs to. Must be a comma-separated list of acitvity instance ids.
- * @param  {String}   [params.evaluatedBefore]                    Restrict to instances that were evaluated before the given date. The date must have the format yyyy-MM-dd'T'HH:mm:ss, e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.evaluatedAfter]                     Restrict to instances that were evaluated after the given date. The date must have the format yyyy-MM-dd'T'HH:mm:ss, e.g., 2013-01-23T14:42:45.
- * @param  {Boolean}  [params.includeInputs]                      Include input values in the result. Value may only be true, as false is the default behavior.
- * @param  {Boolean}  [params.includeOutputs]                     Include output values in the result. Value may only be true, as false is the default behavior.
- * @param  {Boolean}  [params.disableBinaryFetching]              Disables fetching of byte array input and output values. Value may only be true, as false is the default behavior.
- * @param  {Boolean}  [params.disableCustomObjectDeserialization] Disables deserialization of input and output values that are custom objects. Value may only be true, as false is the default behavior.
- * @param  {String}   [params.sortBy]                             Sort the results by a given criterion.
- *                                                                Valid values are evaluationTime. Must be used in conjunction with the sortOrder parameter.
- * @param  {String}   [params.sortOrder]                          Sort the results in a given order.
- *                                                                Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
- * @param  {Number}   [params.firstResult]                        Pagination of results. Specifies the index of the first result to return.
- * @param  {Number}   [params.maxResults]                         Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
- * @param  {Function} done
- */
-History.decisionInstance = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.get(this.path + '/decision-instance', {
-    data: params,
-    done: done
-  });
-};
-
-
-/**
- * Query for the number of historic decision instances that fulfill the given parameters.
- * This method takes the same parameters as `History.decisionInstance`.
- */
-History.decisionInstanceCount = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.get(this.path + '/decision-instance/count', {
-    data: params,
-    done: done
-  });
-};
-
-
 module.exports = History;
 
 
-},{"./../abstract-client-resource":4}],17:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],15:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1998,7 +1742,7 @@ Incident.count = function(params, done) {
 module.exports = Incident;
 
 
-},{"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],16:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2081,7 +1825,7 @@ Job.setRetries = function(params, done) {
 
 module.exports = Job;
 
-},{"./../abstract-client-resource":4}],19:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],17:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2120,7 +1864,7 @@ Metrics.sum = function (params, done) {
 
 module.exports = Metrics;
 
-},{"./../abstract-client-resource":4}],20:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2452,7 +2196,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 module.exports = ProcessDefinition;
 
 
-},{"./../abstract-client-resource":4}],21:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],19:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -2566,86 +2310,6 @@ var ProcessInstance = AbstractClientResource.extend(
     AbstractClientResource.list.apply(this, arguments);
   },
 
-  /**
-   * Query for process instances using a list of parameters and retrieves the count
-   *
-   * @param  {Object}   params
-   * @param {String} [params.processInstanceIds]      Filter by a comma-separated list of process
-   *                                                  instance ids.
-   * @param {String} [params.businessKey]             Filter by process instance business key.
-   * @param {String} [params.caseInstanceId]          Filter by case instance id.
-   * @param {String} [params.processDefinitionId]     Filter by the process definition the
-   *                                                  instances run on.
-   * @param {String} [params.processDefinitionKey]    Filter by the key of the process definition
-   *                                                  the instances run on.
-   * @param {String} [params.superProcessInstance]    Restrict query to all process instances that
-   *                                                  are sub process instances of the given process
-   *                                                  instance. Takes a process instance id.
-   * @param {String} [params.subProcessInstance]      Restrict query to all process instances that
-   *                                                  have the given process instance as a sub
-   *                                                  process instance. Takes a process instance id.
-   * @param {String} [params.active]                  Only include active process instances.
-   *                                                  Values may be true or false.
-   * @param {String} [params.suspended]               Only include suspended process instances.
-   *                                                  Values may be true or false.
-   * @param {String} [params.incidentId]              Filter by the incident id.
-   * @param {String} [params.incidentType]            Filter by the incident type.
-   * @param {String} [params.incidentMessage]         Filter by the incident message. Exact match.
-   * @param {String} [params.incidentMessageLike]     Filter by the incident message that the
-   *                                                  parameter is a substring of.
-   * @param {String} [params.variables]               Only include process instances that have
-   *                                                  variables with certain values.
-   *                                                  Variable filtering expressions are
-   *                                                  comma-separated and are structured as follows:
-   *                                                  A valid parameter value has the form
-   *                                                  key_operator_value. key is the variable name,
-   *                                                  operator is the comparison operator to be used
-   *                                                  and value the variable value.
-   *                                                  Note: Values are always treated as String
-   *                                                  objects on server side.
-   *                                                  Valid operator values are:
-   *                                                  - eq - equal to;
-   *                                                  - neq - not equal to;
-   *                                                  - gt - greater than;
-   *                                                  - gteq - greater than or equal to;
-   *                                                  - lt - lower than;
-   *                                                  - lteq - lower than or equal to;
-   *                                                  - like.
-   *                                                  key and value may not contain underscore or
-   *                                                  comma characters.
-   * @param {String} [params.sortBy]                  Sort the results lexicographically by a given
-   *                                                  criterion.
-   *                                                  Valid values are:
-   *                                                  - instanceId
-   *                                                  - definitionKey
-   *                                                  - definitionId.
-   *                                                  Must be used in conjunction with the sortOrder
-   *                                                  parameter.
-   * @param {String} [params.sortOrder]               Sort the results in a given order.
-   *                                                  Values may be asc for ascending order
-   *                                                  or desc for descending order.
-   *                                                  Must be used in conjunction with sortBy param.
-   * @param {String} [params.firstResult]             Pagination of results. Specifies the index of
-   *                                                  the first result to return.
-   * @param {String} [params.maxResults]              Pagination of results. Specifies the maximum
-   *                                                  number of results to return.
-   *                                                  Will return less results if there are no more
-   *                                                  results left.
-   * @param  {requestCallback} done
-   */
-  count: function(params, done) {
-    if (arguments.length === 1 && typeof params === 'function') {
-      done = params;
-      params = {};
-    }
-
-    params = params || {};
-
-    this.http.get(this.path + '/count', {
-      data: params,
-      done: done || function () {}
-    });
-  },
 
   /**
    * Post process instance modifications
@@ -2682,7 +2346,7 @@ var ProcessInstance = AbstractClientResource.extend(
 
 module.exports = ProcessInstance;
 
-},{"./../abstract-client-resource":4}],22:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],20:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2848,11 +2512,6 @@ Task.identityLinks = function(taskId, done) {
  * @param  {Function} done
  */
 Task.identityLinksAdd = function(taskId, params, done) {
-    if (arguments.length === 2) {
-    done = arguments[1];
-    params = arguments[0];
-    taskId = params.id;
-  }
   return this.http.post(this.path +'/'+ taskId + '/identity-links', {
     data: params,
     done: done
@@ -2869,12 +2528,6 @@ Task.identityLinksAdd = function(taskId, params, done) {
  * @param  {Function} done
  */
 Task.identityLinksDelete = function(taskId, params, done) {
-  if (arguments.length === 2) {
-    done = arguments[1];
-    params = arguments[0];
-    taskId = params.id;
-  }
-
   return this.http.post(this.path +'/'+ taskId + '/identity-links/delete', {
     data: params,
     done: done
@@ -3147,7 +2800,7 @@ Task.localVariables = function(taskId, done) {
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":4}],23:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],21:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3285,7 +2938,7 @@ User.count = function (options, done) {
 User.profile = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
-  this.http.get(this.path + '/' + id + '/profile', {
+  this.http.del(this.path + '/' + id + '/profile', {
     done: done || function () {}
   });
 };
@@ -3365,7 +3018,7 @@ User.delete = function (options, done) {
 
 module.exports = User;
 
-},{"./../abstract-client-resource":4}],24:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],22:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3505,7 +3158,7 @@ Variable.instances = function (data, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":4}],25:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],23:[function(_dereq_,module,exports){
 'use strict';
 
 var Events = _dereq_('./events');
@@ -3592,7 +3245,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":26}],26:[function(_dereq_,module,exports){
+},{"./events":24}],24:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -3746,7 +3399,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],27:[function(_dereq_,module,exports){
+},{}],25:[function(_dereq_,module,exports){
 'use strict';
 /* global CamSDK, require, localStorage: false */
 
@@ -3762,8 +3415,6 @@ var VariableManager = _dereq_('./variable-manager');
 var InputFieldHandler = _dereq_('./controls/input-field-handler');
 
 var ChoicesFieldHandler = _dereq_('./controls/choices-field-handler');
-
-var FileDownloadHandler = _dereq_('./controls/file-download-handler');
 
 var BaseClass = _dereq_('./../base-class');
 
@@ -3807,9 +3458,6 @@ function CamundaForm(options) {
   }
 
   this.taskId = options.taskId;
-  if(!!this.taskId) {
-    this.taskBasePath = this.client.baseUrl + "/task/" + this.taskId;
-  }
   this.processDefinitionId = options.processDefinitionId;
   this.processDefinitionKey = options.processDefinitionKey;
 
@@ -3839,8 +3487,7 @@ function CamundaForm(options) {
    */
   this.formFieldHandlers = options.formFieldHandlers || [
     InputFieldHandler,
-    ChoicesFieldHandler,
-    FileDownloadHandler
+    ChoicesFieldHandler
   ];
 
   this.businessKey = null;
@@ -3863,7 +3510,6 @@ function CamundaForm(options) {
 CamundaForm.prototype.initializeHandler = function(FieldHandler) {
   var self = this;
   var selector = FieldHandler.selector;
-
   $(selector, self.formElement).each(function() {
     self.fields.push(new FieldHandler(this, self.variableManager));
   });
@@ -4239,7 +3885,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
         }
         var reader = new FileReader();
         /* jshint ignore:start */
-        reader.onloadend = (function(i, element) {
+        reader.onloadend = (function(i) {
           return function(e) {
             var binary = '';
             var bytes = new Uint8Array( e.target.result );
@@ -4247,20 +3893,10 @@ CamundaForm.prototype.transformFiles = function(callback) {
             for (var j = 0; j < len; j++) {
                 binary += String.fromCharCode( bytes[ j ] );
             }
-            var fileVar = that.variableManager.variables[that.fields[i].variableName];
-            fileVar.value = btoa(binary);
-
-            // set file metadata as value info 
-            if(fileVar.type.toLowerCase() === 'file') {
-              fileVar.valueInfo = {
-                filename: element.files[0].name,
-                mimeType: element.files[0].type
-              };
-            }
-
+            that.variableManager.variables[that.fields[i].variableName].value = btoa(binary);
             callCallback();
           };
-        })(i, element);
+        })(i);
         /* jshint ignore:end */
         reader.readAsArrayBuffer(element.files[0]);
         counter++;
@@ -4381,13 +4017,6 @@ CamundaForm.prototype.mergeVariables = function(variables) {
     if(this.variableManager.isJsonVariable(v)) {
       vars[v].value = JSON.parse(variables[v].value);
     }
-
-    // generate content url for file and bytes variables
-    var type = vars[v].type;
-    if(!!this.taskBasePath && (type === "Bytes" || type === "File")) {
-      vars[v].contentUrl = this.taskBasePath + '/variables/'+ vars[v].name + "/data";
-    }
-
     this.variableManager.isVariablesFetched = true;
   }
 };
@@ -4461,19 +4090,18 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":25,"./../events":26,"./constants":28,"./controls/choices-field-handler":30,"./controls/file-download-handler":31,"./controls/input-field-handler":32,"./dom-lib":33,"./variable-manager":35}],28:[function(_dereq_,module,exports){
+},{"./../base-class":23,"./../events":24,"./constants":26,"./controls/choices-field-handler":28,"./controls/input-field-handler":29,"./dom-lib":30,"./variable-manager":32}],26:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
   DIRECTIVE_CAM_FORM : 'cam-form',
   DIRECTIVE_CAM_VARIABLE_NAME : 'cam-variable-name',
   DIRECTIVE_CAM_VARIABLE_TYPE : 'cam-variable-type',
-  DIRECTIVE_CAM_FILE_DOWNLOAD : 'cam-file-download',
   DIRECTIVE_CAM_CHOICES : 'cam-choices',
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var BaseClass = _dereq_('../../base-class');
@@ -4546,7 +4174,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":25,"./../dom-lib":33}],30:[function(_dereq_,module,exports){
+},{"../../base-class":23,"./../dom-lib":30}],28:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -4681,59 +4309,7 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":28,"./../dom-lib":33,"./abstract-form-field":29}],31:[function(_dereq_,module,exports){
-'use strict';
-
-var constants = _dereq_('./../constants'),
-    AbstractFormField = _dereq_('./abstract-form-field'),
-    $ = _dereq_('./../dom-lib');
-
-/**
- * A field control handler for file downloads
- * @class
- * @memberof CamSDK.form
- * @augments {CamSDK.form.AbstractFormField}
- */
-var InputFieldHandler = AbstractFormField.extend(
-{
-  /**
-   * Prepares an instance
-   */
-  initialize: function() {
-
-    this.variableName = this.element.attr(constants.DIRECTIVE_CAM_FILE_DOWNLOAD);
-
-    // fetch the variable
-    this.variableManager.fetchVariable(this.variableName);
-  },
-
-  applyValue: function() {
-
-    var variable = this.variableManager.variable(this.variableName);
-
-    // set the download url of the link
-    this.element.attr("href", variable.contentUrl);
-
-    // sets the text content of the link to the filename it the textcontent is empty    
-    if(this.element.text().trim().length === 0) {
-      this.element.text(variable.valueInfo.filename);
-    }
-
-    return this;
-  }
-
-},
-
-{
-
-  selector: 'a['+ constants.DIRECTIVE_CAM_FILE_DOWNLOAD +']'
-
-});
-
-module.exports = InputFieldHandler;
-
-
-},{"./../constants":28,"./../dom-lib":33,"./abstract-form-field":29}],32:[function(_dereq_,module,exports){
+},{"./../constants":26,"./../dom-lib":30,"./abstract-form-field":27}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -4839,7 +4415,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":28,"./../dom-lib":33,"./abstract-form-field":29}],33:[function(_dereq_,module,exports){
+},{"./../constants":26,"./../dom-lib":30,"./abstract-form-field":27}],30:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -4854,7 +4430,7 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],34:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -4887,7 +4463,7 @@ var convertToType = function(value, type) {
     value = value.trim();
   }
 
-  if(type === "String" || type === "Bytes" || type === "File") {
+  if(type === "String" || type === "Bytes") {
     return value;
   } else if (isType(value, type)) {
     switch(type) {
@@ -4913,7 +4489,7 @@ module.exports = {
   isType : isType
 };
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 'use strict';
 
 var convertToType = _dereq_('./type-util').convertToType;
@@ -5033,7 +4609,7 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":34}],36:[function(_dereq_,module,exports){
+},{"./type-util":31}],33:[function(_dereq_,module,exports){
 'use strict';
 
 
@@ -5158,7 +4734,7 @@ utils.series = function(tasks, callback) {
   });
 };
 
-},{"./forms/type-util":34}],37:[function(_dereq_,module,exports){
+},{"./forms/type-util":31}],34:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -6212,7 +5788,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":38,"ieee754":39,"is-array":40}],38:[function(_dereq_,module,exports){
+},{"base64-js":35,"ieee754":36,"is-array":37}],35:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -6334,7 +5910,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],39:[function(_dereq_,module,exports){
+},{}],36:[function(_dereq_,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -6420,7 +5996,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],40:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 
 /**
  * isArray
@@ -6455,7 +6031,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -7538,7 +7114,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":42,"reduce":43}],42:[function(_dereq_,module,exports){
+},{"emitter":39,"reduce":40}],39:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -7704,7 +7280,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],43:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
