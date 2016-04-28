@@ -115,7 +115,7 @@ var CamundaFormAngular = CamundaForm.extend(
 
 module.exports = CamundaFormAngular;
 
-},{"./../../forms/camunda-form":29,"./../../forms/constants":30}],2:[function(_dereq_,module,exports){
+},{"./../../forms/camunda-form":31,"./../../forms/constants":32}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var angular = (window.angular),
@@ -204,7 +204,7 @@ ngModule.directive('camVariableType', [function() {
 module.exports = CamundaFormAngular;
 
 
-},{"./../../forms/type-util":36,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
+},{"./../../forms/type-util":38,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
@@ -214,7 +214,7 @@ module.exports = {
 };
 
 
-},{"./../api-client":6,"./../utils":38,"./forms":2}],4:[function(_dereq_,module,exports){
+},{"./../api-client":6,"./../utils":40,"./forms":2}],4:[function(_dereq_,module,exports){
 'use strict';
 
 // var HttpClient = require('./http-client');
@@ -484,7 +484,7 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":27,"./../events":28,"q":44}],5:[function(_dereq_,module,exports){
+},{"./../base-class":29,"./../events":30,"q":46}],5:[function(_dereq_,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -686,7 +686,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"./../events":28,"./../utils":38,"buffer":39,"q":44,"superagent":45}],6:[function(_dereq_,module,exports){
+},{"./../events":30,"./../utils":40,"buffer":41,"q":46,"superagent":47}],6:[function(_dereq_,module,exports){
 'use strict';
 var Events = _dereq_('./../events');
 
@@ -769,6 +769,7 @@ CamundaClient.HttpClient = _dereq_('./http-client');
   proto.initialize = function() {
     /* jshint sub: true */
     _resources['authorization']       = _dereq_('./resources/authorization');
+    _resources['batch']               = _dereq_('./resources/batch');
     _resources['deployment']          = _dereq_('./resources/deployment');
     _resources['external-task']       = _dereq_('./resources/external-task');
     _resources['filter']              = _dereq_('./resources/filter');
@@ -783,6 +784,7 @@ CamundaClient.HttpClient = _dereq_('./http-client');
     _resources['user']                = _dereq_('./resources/user');
     _resources['group']               = _dereq_('./resources/group');
     _resources['incident']            = _dereq_('./resources/incident');
+    _resources['job-definition']      = _dereq_('./resources/job-definition');
     _resources['job']                 = _dereq_('./resources/job');
     _resources['metrics']             = _dereq_('./resources/metrics');
     _resources['decision-definition'] = _dereq_('./resources/decision-definition');
@@ -859,7 +861,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":28,"./http-client":5,"./resources/authorization":7,"./resources/case-definition":8,"./resources/case-execution":9,"./resources/case-instance":10,"./resources/decision-definition":11,"./resources/deployment":12,"./resources/execution":13,"./resources/external-task":14,"./resources/filter":15,"./resources/group":16,"./resources/history":17,"./resources/incident":18,"./resources/job":19,"./resources/metrics":20,"./resources/migration":21,"./resources/process-definition":22,"./resources/process-instance":23,"./resources/task":24,"./resources/user":25,"./resources/variable":26}],7:[function(_dereq_,module,exports){
+},{"./../events":30,"./http-client":5,"./resources/authorization":7,"./resources/batch":8,"./resources/case-definition":9,"./resources/case-execution":10,"./resources/case-instance":11,"./resources/decision-definition":12,"./resources/deployment":13,"./resources/execution":14,"./resources/external-task":15,"./resources/filter":16,"./resources/group":17,"./resources/history":18,"./resources/incident":19,"./resources/job":21,"./resources/job-definition":20,"./resources/metrics":22,"./resources/migration":23,"./resources/process-definition":24,"./resources/process-instance":25,"./resources/task":26,"./resources/user":27,"./resources/variable":28}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -995,6 +997,64 @@ module.exports = Authorization;
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
 
+
+
+/**
+ * Batch Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var Batch = AbstractClientResource.extend();
+
+/**
+ * Path used by the resource to perform HTTP queries
+ * @type {String}
+ */
+Batch.path = 'batch';
+
+/**
+ * Retrieves a single batch according to the Batch interface in the engine.
+ */
+Batch.get = function(id, done) {
+  return this.http.get(this.path + '/' + id, {
+    done: done
+  });
+};
+
+Batch.statistics = function(params, done) {
+  return this.http.get(this.path + '/statistics/', {
+    data: params,
+    done: done
+  });
+};
+
+Batch.statisticsCount = function(params, done) {
+  return this.http.get(this.path + '/statistics/count', {
+    data: params,
+    done: done
+  });
+};
+
+Batch.delete = function(params, done) {
+  var path = this.path + '/' + params.id;
+
+  if(params.cascade) {
+    path += '?cascade=true';
+  }
+
+  return this.http.del(path, {
+    done: done
+  });
+};
+
+module.exports = Batch;
+
+},{"./../abstract-client-resource":4}],9:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
 /**
  * CaseDefinition Resource
  * @class
@@ -1061,7 +1121,7 @@ CaseDefinition.create = function(params, done) {
 
 module.exports = CaseDefinition;
 
-},{"./../abstract-client-resource":4}],9:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1123,7 +1183,7 @@ CaseExecution.complete = function(executionId, params, done) {
 
 module.exports = CaseExecution;
 
-},{"./../abstract-client-resource":4}],10:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],11:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1163,7 +1223,7 @@ CaseInstance.close = function(instanceId, params, done) {
 
 module.exports = CaseInstance;
 
-},{"./../abstract-client-resource":4}],11:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1262,7 +1322,7 @@ DecisionDefinition.evaluate = function(params, done) {
 
 module.exports = DecisionDefinition;
 
-},{"./../abstract-client-resource":4}],12:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1453,7 +1513,7 @@ Deployment.redeploy = function(options, done) {
 
 module.exports = Deployment;
 
-},{"./../abstract-client-resource":4}],13:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],14:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1499,7 +1559,7 @@ Execution.modifyVariables = function(data, done) {
 module.exports = Execution;
 
 
-},{"./../abstract-client-resource":4}],14:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],15:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1695,7 +1755,7 @@ ExternalTask.retries = function(params, done) {
 
 module.exports = ExternalTask;
 
-},{"./../abstract-client-resource":4}],15:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],16:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1868,7 +1928,7 @@ Filter.authorizations = function(id, done) {
 module.exports = Filter;
 
 
-},{"./../abstract-client-resource":4}],16:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],17:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2042,7 +2102,7 @@ Group.delete = function (options, done) {
 
 module.exports = Group;
 
-},{"./../abstract-client-resource":4}],17:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2259,6 +2319,47 @@ History.decisionInstanceCount = function(params, done) {
   });
 };
 
+/**
+ * Query for historic batches that fulfill given parameters. Parameters may be the properties of batches, such as the id or type.
+ * The size of the result set can be retrieved by using the GET query count.
+ */
+History.batch = function(params, done) {
+  if (arguments.length < 2) {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.get(this.path + '/batch', {
+    data: params,
+    done: done
+  });
+};
+
+/**
+ * Retrieves a single historic batch according to the HistoricBatch interface in the engine.
+ */
+History.singleBatch = function(id, done) {
+  return this.http.get(this.path + '/batch/' + id, {
+    done: done
+  });
+};
+
+/**
+ * Request the number of historic batches that fulfill the query criteria.
+ * Takes the same filtering parameters as the GET query.
+ */
+History.batchCount = function(params, done) {
+  if (arguments.length < 2) {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.get(this.path + '/batch/count', {
+    data: params,
+    done: done
+  });
+};
+
 
 /**
  * Query for process instance durations report.
@@ -2314,7 +2415,7 @@ History.reportAsCsv = function (params, done) {
 module.exports = History;
 
 
-},{"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],19:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2423,7 +2524,27 @@ Incident.count = function(params, done) {
 module.exports = Incident;
 
 
-},{"./../abstract-client-resource":4}],19:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],20:[function(_dereq_,module,exports){
+'use strict';
+
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
+
+
+var JobDefinition = AbstractClientResource.extend();
+
+JobDefinition.path = 'job-definition';
+
+JobDefinition.setRetries = function(params, done) {
+  return this.http.put(this.path + '/' + params.id + '/retries', {
+    data: params,
+    done: done
+  });
+};
+
+module.exports = JobDefinition;
+
+},{"./../abstract-client-resource":4}],21:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2504,9 +2625,15 @@ Job.setRetries = function(params, done) {
   });
 };
 
+Job.delete = function(id, done) {
+  return this.http.del(this.path + '/' + id, {
+    done: done
+  });
+};
+
 module.exports = Job;
 
-},{"./../abstract-client-resource":4}],20:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],22:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2545,7 +2672,7 @@ Metrics.sum = function (params, done) {
 
 module.exports = Metrics;
 
-},{"./../abstract-client-resource":4}],21:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],23:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2596,9 +2723,25 @@ Migration.execute = function (params, done) {
   });
 };
 
+/**
+ * Execute a migration plan asynchronously
+ * @param  {Object}   params
+ * @param  {String}   [params.migrationPlan]
+ * @param  {String}   [params.processInstanceIds]
+ * @param  {Function} done
+ */
+Migration.executeAsync = function (params, done) {
+  var path = this.path + '/executeAsync';
+
+  return this.http.post(path, {
+    data: params,
+    done: done
+  });
+};
+
 module.exports = Migration;
 
-},{"./../abstract-client-resource":4}],22:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],24:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -2960,7 +3103,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 module.exports = ProcessDefinition;
 
 
-},{"./../abstract-client-resource":4,"q":44}],23:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":46}],25:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_("./../abstract-client-resource");
@@ -3005,6 +3148,28 @@ var ProcessInstance = AbstractClientResource.extend(
     return this.http.post(params, done);
   },
 
+  list: function(params, done) {
+    var path = this.path;
+
+    // those parameters have to be passed in the query and not body
+    path += '?firstResult='+ (params.firstResult || 0);
+    path += '&maxResults='+ (params.maxResults || 15);
+
+    return this.http.post(path, {
+      data: params,
+      done: done
+    });
+  },
+
+  count: function(params, done) {
+    var path = this.path + '/count';
+
+    return this.http.post(path, {
+      data: params,
+      done: done
+    });
+  },
+
   /**
    * Post process instance modifications
    * @see http://docs.camunda.org/api-references/rest/#process-instance-modify-process-instance-execution-state-method
@@ -3040,7 +3205,7 @@ var ProcessInstance = AbstractClientResource.extend(
 
 module.exports = ProcessInstance;
 
-},{"./../abstract-client-resource":4}],24:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],26:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -3545,7 +3710,7 @@ Task.deleteVariable = function (data, done) {
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":4,"q":44}],25:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":46}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -3781,7 +3946,7 @@ User.delete = function (options, done) {
 
 module.exports = User;
 
-},{"./../abstract-client-resource":4,"q":44}],26:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":46}],28:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3921,7 +4086,7 @@ Variable.instances = function (data, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":4}],27:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var Events = _dereq_('./events');
@@ -4008,7 +4173,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":28}],28:[function(_dereq_,module,exports){
+},{"./events":30}],30:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -4162,7 +4327,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],29:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 'use strict';
 /* global CamSDK, require, localStorage: false */
 
@@ -4877,7 +5042,7 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":27,"./../events":28,"./constants":30,"./controls/choices-field-handler":32,"./controls/file-download-handler":33,"./controls/input-field-handler":34,"./dom-lib":35,"./variable-manager":37}],30:[function(_dereq_,module,exports){
+},{"./../base-class":29,"./../events":30,"./constants":32,"./controls/choices-field-handler":34,"./controls/file-download-handler":35,"./controls/input-field-handler":36,"./dom-lib":37,"./variable-manager":39}],32:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -4889,7 +5054,7 @@ module.exports = {
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],31:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 'use strict';
 
 var BaseClass = _dereq_('../../base-class');
@@ -4962,7 +5127,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":27,"./../dom-lib":35}],32:[function(_dereq_,module,exports){
+},{"../../base-class":29,"./../dom-lib":37}],34:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -5097,7 +5262,7 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":30,"./../dom-lib":35,"./abstract-form-field":31}],33:[function(_dereq_,module,exports){
+},{"./../constants":32,"./../dom-lib":37,"./abstract-form-field":33}],35:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -5149,7 +5314,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":30,"./../dom-lib":35,"./abstract-form-field":31}],34:[function(_dereq_,module,exports){
+},{"./../constants":32,"./../dom-lib":37,"./abstract-form-field":33}],36:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -5255,7 +5420,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":30,"./../dom-lib":35,"./abstract-form-field":31}],35:[function(_dereq_,module,exports){
+},{"./../constants":32,"./../dom-lib":37,"./abstract-form-field":33}],37:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -5270,7 +5435,7 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],36:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -5329,7 +5494,7 @@ module.exports = {
   isType : isType
 };
 
-},{}],37:[function(_dereq_,module,exports){
+},{}],39:[function(_dereq_,module,exports){
 'use strict';
 
 var convertToType = _dereq_('./type-util').convertToType;
@@ -5449,7 +5614,7 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":36}],38:[function(_dereq_,module,exports){
+},{"./type-util":38}],40:[function(_dereq_,module,exports){
 'use strict';
 
 
@@ -5574,7 +5739,7 @@ utils.series = function(tasks, callback) {
   });
 };
 
-},{"./forms/type-util":36}],39:[function(_dereq_,module,exports){
+},{"./forms/type-util":38}],41:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -6628,7 +6793,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":40,"ieee754":41,"is-array":42}],40:[function(_dereq_,module,exports){
+},{"base64-js":42,"ieee754":43,"is-array":44}],42:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -6750,7 +6915,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],43:[function(_dereq_,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -6836,7 +7001,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],42:[function(_dereq_,module,exports){
+},{}],44:[function(_dereq_,module,exports){
 
 /**
  * isArray
@@ -6871,7 +7036,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],43:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -6936,7 +7101,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],44:[function(_dereq_,module,exports){
+},{}],46:[function(_dereq_,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -8988,7 +9153,7 @@ return Q;
 });
 
 }).call(this,_dereq_("FWaASH"))
-},{"FWaASH":43}],45:[function(_dereq_,module,exports){
+},{"FWaASH":45}],47:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -10147,7 +10312,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":46,"reduce":47}],46:[function(_dereq_,module,exports){
+},{"emitter":48,"reduce":49}],48:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -10313,7 +10478,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],47:[function(_dereq_,module,exports){
+},{}],49:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
