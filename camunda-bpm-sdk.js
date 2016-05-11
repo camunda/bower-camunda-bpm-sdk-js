@@ -4261,7 +4261,7 @@ var isType = function(value, type) {
     case 'Boolean':
       return BOOLEAN_PATTERN.test(value);
     case 'Date':
-      return DATE_PATTERN.test(value);
+      return DATE_PATTERN.test(dateToString(value));
   }
 };
 
@@ -4285,16 +4285,45 @@ var convertToType = function(value, type) {
       case 'Boolean':
         return "true" === value;
       case 'Date':
-        return value;
+        return dateToString(value);
     }
   } else {
     throw new Error("Value '"+value+"' is not of type "+type);
   }
 };
 
+/**
+ * This reformates the date into a ISO8601 conform string which will mirror the selected date in local format.
+ * TODO: Remove this when it is fixed by angularjs
+ *
+ * @see https://app.camunda.com/jira/browse/CAM-4746
+ *
+ */
+var pad = function(number) {
+  return ( number < 10 ) ?  '0' + number : number;
+};
+
+var dateToString = function(date) {
+  if( typeof date === 'object' && typeof date.getFullYear === 'function' ) {
+    var year    = date.getFullYear(),
+        month   = pad( date.getMonth() + 1 ),
+        day     = pad( date.getDate() ),
+        hour    = pad( date.getHours() ),
+        min = pad( date.getMinutes() ),
+        sec = pad( date.getSeconds() );
+
+    return year + '-' + month + '-' + day + 'T' + hour + ':' + min + ':' + sec;
+
+  } else {
+    return date;
+
+  }
+};
+
 module.exports = {
   convertToType : convertToType,
-  isType : isType
+  isType : isType,
+  dateToString : dateToString
 };
 
 },{}],30:[function(_dereq_,module,exports){
