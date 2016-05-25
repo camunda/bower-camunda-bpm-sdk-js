@@ -1775,7 +1775,10 @@ Group.options = function(options, done) {
   }
 
   return this.http.options(this.path + '/' + id, {
-    done: done || noop
+    done: done || noop,
+    headers: {
+      Accept: 'application/json'
+    }
   });
 };
 
@@ -1869,7 +1872,7 @@ Group.list = function (options, done) {
   else {
     options = options || {};
   }
-  
+
   return this.http.get(this.path, {
     data: options,
     done: done || noop
@@ -2190,6 +2193,14 @@ History.batchCount = function(params, done) {
 
   return this.http.get(this.path + '/batch/count', {
     data: params,
+    done: done
+  });
+};
+
+History.batchDelete = function(id, done) {
+  var path = this.path + '/batch/' + id;
+
+  return this.http.del(path, {
     done: done
   });
 };
@@ -3771,7 +3782,10 @@ Tenant.options = function(options, done) {
   }
 
   return this.http.options(this.path + '/' + id, {
-    done: done || noop
+    done: done || noop,
+    headers: {
+      Accept: 'application/json'
+    }
   });
 };
 module.exports = Tenant;
@@ -3822,7 +3836,10 @@ User.options = function(options, done) {
   }
 
   return this.http.options(this.path + '/' + id, {
-    done: done || noop
+    done: done || noop,
+    headers: {
+      Accept: 'application/json'
+    }
   });
 };
 
