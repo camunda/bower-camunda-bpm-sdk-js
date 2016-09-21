@@ -1961,6 +1961,7 @@ module.exports = Filter;
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 /**
  * No-Op callback
@@ -2002,7 +2003,7 @@ Group.options = function(options, done) {
     }
   }
 
-  return this.http.options(this.path + '/' + id, {
+  return this.http.options(this.path + '/' + utils.escapeUrl(id), {
     done: done || noop,
     headers: {
       Accept: 'application/json'
@@ -2062,7 +2063,7 @@ Group.count = function (options, done) {
 Group.get = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
-  return this.http.get(this.path + '/' + id, {
+  return this.http.get(this.path + '/' + utils.escapeUrl(id), {
     data: options,
     done: done || noop
   });
@@ -2115,8 +2116,8 @@ Group.list = function (options, done) {
  * @param {String} [options.userId]   The id of user to add to the group
  * @param  {Function} done
  */
-Group.createMember = function (options, done) {
-  return this.http.put(this.path +'/' + options.id + '/members/' + options.userId, {
+Group.createMember = function(options, done) {
+  return this.http.put(this.path +'/' + utils.escapeUrl(options.id) + '/members/' + utils.escapeUrl(options.userId), {
     data: options,
     done: done || noop
   });
@@ -2130,8 +2131,8 @@ Group.createMember = function (options, done) {
  * @param {String} [options.userId]   The id of user to add to the group
  * @param  {Function} done
  */
-Group.deleteMember = function (options, done) {
-  return this.http.del(this.path +'/' + options.id + '/members/' + options.userId, {
+Group.deleteMember = function(options, done) {
+  return this.http.del(this.path +'/' + utils.escapeUrl(options.id) + '/members/' + utils.escapeUrl(options.userId), {
     data: options,
     done: done || noop
   });
@@ -2144,8 +2145,8 @@ Group.deleteMember = function (options, done) {
  * @param  {Object}   group   is an object representation of a group
  * @param  {Function} done
  */
-Group.update = function (options, done) {
-  return this.http.put(this.path +'/' + options.id, {
+Group.update = function(options, done) {
+  return this.http.put(this.path +'/' + utils.escapeUrl(options.id), {
     data: options,
     done: done || noop
   });
@@ -2158,8 +2159,8 @@ Group.update = function (options, done) {
  * @param  {Object}   group   is an object representation of a group
  * @param  {Function} done
  */
-Group.delete = function (options, done) {
-  return this.http.del(this.path +'/' + options.id, {
+Group.delete = function(options, done) {
+  return this.http.del(this.path +'/' + utils.escapeUrl(options.id), {
     data: options,
     done: done || noop
   });
@@ -2167,7 +2168,7 @@ Group.delete = function (options, done) {
 
 module.exports = Group;
 
-},{"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
+},{"../../utils":41,"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4023,6 +4024,7 @@ module.exports = Tenant;
 
 var Q = _dereq_('q');
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 /**
  * No-Op callback
@@ -4063,7 +4065,7 @@ User.options = function(options, done) {
     }
   }
 
-  return this.http.options(this.path + '/' + id, {
+  return this.http.options(this.path + '/' + utils.escapeUrl(id), {
     done: done || noop,
     headers: {
       Accept: 'application/json'
@@ -4192,7 +4194,7 @@ User.count = function (options, done) {
 User.profile = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
-  return this.http.get(this.path + '/' + id + '/profile', {
+  return this.http.get(this.path + '/' + utils.escapeUrl(id) + '/profile', {
     done: done || noop
   });
 };
@@ -4217,7 +4219,7 @@ User.updateProfile = function (options, done) {
     return Q.reject(err);
   }
 
-  return this.http.put(this.path + '/' + options.id + '/profile', {
+  return this.http.put(this.path + '/' + utils.escapeUrl(options.id) + '/profile', {
     data: options,
     done: done
   });
@@ -4258,7 +4260,7 @@ User.updateCredentials = function (options, done) {
     data.authenticatedUserPassword = options.authenticatedUserPassword;
   }
 
-  return this.http.put(this.path + '/' + options.id + '/credentials', {
+  return this.http.put(this.path + '/' + utils.escapeUrl(options.id) + '/credentials', {
     data: data,
     done: done
   });
@@ -4274,14 +4276,14 @@ User.updateCredentials = function (options, done) {
 User.delete = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
-  return this.http.del(this.path + '/' + id, {
+  return this.http.del(this.path + '/' + utils.escapeUrl(id), {
     done: done || noop
   });
 };
 
 module.exports = User;
 
-},{"./../abstract-client-resource":4,"q":47}],29:[function(_dereq_,module,exports){
+},{"../../utils":41,"./../abstract-client-resource":4,"q":47}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -6101,6 +6103,20 @@ utils.series = function(tasks, callback) {
   }, function (err) {
     callback(err, results);
   });
+};
+
+/**
+ * Escapes url string
+ *
+ * @param {string} string
+ * @returns {string}
+ */
+utils.escapeUrl = function(string) {
+  return encodeURI(string)
+    .replace(/\//g, '%2F')
+    .replace(/%2F/g, '%252F')
+    .replace(/\*/g, '%2A')
+    .replace(/%5C/g, '%255C');
 };
 
 },{"./forms/type-util":39}],42:[function(_dereq_,module,exports){
