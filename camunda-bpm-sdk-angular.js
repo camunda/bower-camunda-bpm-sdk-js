@@ -721,7 +721,7 @@ var Events = _dereq_('./../events');
  * @memberof CamSDK.client
  *
  * @param  {Object} config                  used to provide necessary configuration
- * @param  {String} [config.engine=default]
+ * @param  {String} [config.engine=default] false to define absolute apiUri
  * @param  {String} config.apiUri
  * @param  {String} [config.headers]        Headers that should be used for all Http requests.
  */
@@ -736,7 +736,10 @@ function CamundaClient(config) {
 
   Events.attach(this);
 
-  config.engine = config.engine || 'default';
+  // use 'default' engine
+  config.engine = typeof config.engine !== 'undefined'
+    ? config.engine
+    : 'default';
 
   // mock by default.. for now
   config.mock =  typeof config.mock !== 'undefined' ? config.mock : true;
@@ -746,10 +749,10 @@ function CamundaClient(config) {
   this.HttpClient = config.HttpClient || CamundaClient.HttpClient;
 
   this.baseUrl = config.apiUri;
-  if(this.baseUrl.slice(-1) !== '/') {
-    this.baseUrl += '/';
+  if (config.engine) {
+    this.baseUrl += (this.baseUrl.slice(-1) !== '/' ? '/' : '');
+    this.baseUrl += 'engine/'+ config.engine;
   }
-  this.baseUrl += 'engine/'+ config.engine;
 
   this.config = config;
 
@@ -2379,6 +2382,26 @@ History.processInstanceCount = function(params, done) {
   }
 
   return this.http.post(this.path + '/process-instance/count', {
+    data: params,
+    done: done
+  });
+};
+
+/**
+ * Delete finished process instances asynchronously. With creation of a batch operation.
+ *
+ * @param params - either list of process instance ID's or an object corresponding to a processInstances
+ *                  POST request based query
+ * @param done - a callback function
+ * @returns {*}
+ */
+History.deleteProcessInstancesAsync = function(params, done) {
+  if (arguments.length < 2) {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.post(this.path + '/process-instance/delete', {
     data: params,
     done: done
   });
