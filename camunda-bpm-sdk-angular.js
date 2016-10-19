@@ -10,98 +10,96 @@ var constants = _dereq_('./../../forms/constants');
 
 
 var CamundaFormAngular = CamundaForm.extend(
-  {
+{
 
-    renderForm: function() {
-      var self = this;
+  renderForm: function(formHtmlSource) {
+    var self = this;
 
-      this.formElement = angular.element(this.formElement);
+    this.formElement = angular.element(this.formElement);
 
     // first add the form to the DOM:
-      CamundaForm.prototype.renderForm.apply(this, arguments);
+    CamundaForm.prototype.renderForm.apply(this, arguments);
 
     // next perform auto-scope binding for all fields which do not have custom bindings
-      function autoBind(key, el) {
-        var element = $(el);
-        if(!element.attr('ng-model')) {
-          var camVarName = element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
-          if(camVarName) {
-            element.attr('ng-model', camVarName);
-          }
+    function autoBind(key, el) {
+      var element = $(el);
+      if(!element.attr('ng-model')) {
+        var camVarName = element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
+        if(!!camVarName) {
+          element.attr('ng-model', camVarName);
         }
       }
+    }
 
-      for(var i = 0; i < this.formFieldHandlers.length; i++) {
-        var handler = this.formFieldHandlers[i];
-        var selector = handler.selector;
-        $(selector, self.formElement).each(autoBind);
-      }
+    for(var i = 0; i < this.formFieldHandlers.length; i++) {
+      var handler = this.formFieldHandlers[i];
+      var selector = handler.selector;
+      $(selector, self.formElement).each(autoBind);
+    }
 
-      this.formElement = angular.element(this.formElement);
+    this.formElement = angular.element(this.formElement);
     // finally compile the form with angular and linked to the current scope
-      var injector = self.formElement.injector();
-      if (!injector) { return; }
+    var injector = self.formElement.injector();
+    if (!injector) { return; }
 
-      var scope = self.formElement.scope();
-      injector.invoke(['$compile', function($compile) {
-        $compile(self.formElement)(scope);
-      }]);
-      scope.camForm = this;
-    },
+    var scope = self.formElement.scope();
+    injector.invoke(['$compile', function($compile) {
+      $compile(self.formElement)(scope);
+    }]);
+    scope.camForm = this;
+  },
 
-    executeFormScript: function(script) {
+  executeFormScript: function(script) {
 
     // overrides executeFormScript to make sure the following variables / functions are available to script implementations:
 
     // * $scope
     // * inject
 
-      this.formElement = angular.element(this.formElement);
+    this.formElement = angular.element(this.formElement);
 
-      var injector = this.formElement.injector();
-      var scope = this.formElement.scope();
+    var injector = this.formElement.injector();
+    var scope = this.formElement.scope();
 
-      /*eslint-disable */
-      (function(camForm, $scope) {
+    (function(camForm, $scope) {
 
       // hook to create the service with injection
-        var inject = function(extensions) {
+      var inject = function(extensions) {
         // if result is an array or function we expect
         // an injectable service
-          if (angular.isFunction(extensions) || angular.isArray(extensions)) {
-            injector.instantiate(extensions, { $scope: scope });
-          } else {
-            throw new Error('Must call inject(array|fn)');
-          }
-        };
-
-      /* jshint evil: true */
-        eval(script);
-      /* jshint evil: false */
-
-      })(this, scope);
-      /*eslint-enable */
-
-    },
-
-    fireEvent: function() {
-
-    // overrides fireEvent to make sure event listener is invoked in an apply phase
-      this.formElement = angular.element(this.formElement);
-
-      var self = this;
-      var args = arguments;
-      var scope = this.formElement.scope();
-
-      var doFireEvent = function() {
-        CamundaForm.prototype.fireEvent.apply(self, args);
+        if (angular.isFunction(extensions) || angular.isArray(extensions)) {
+          injector.instantiate(extensions, { $scope: scope });
+        } else {
+          throw new Error('Must call inject(array|fn)');
+        }
       };
 
-      var injector = self.formElement.injector();
-      if (!injector) { return; }
+      /* jshint evil: true */
+      eval(script);
+      /* jshint evil: false */
 
-      injector.invoke(['$rootScope', function($rootScope) {
-        var phase = $rootScope.$$phase;
+    })(this, scope);
+
+  },
+
+  fireEvent: function() {
+
+    // overrides fireEvent to make sure event listener is invoked in an apply phase
+    this.formElement = angular.element(this.formElement);
+
+    var self = this;
+    var args = arguments;
+    var scope = this.formElement.scope();
+
+    var doFireEvent = function() {
+      CamundaForm.prototype.fireEvent.apply(self, args);
+    };
+
+    var injector = self.formElement.injector();
+    if (!injector) { return; }
+
+    injector.invoke(['$rootScope', function($rootScope) {
+      var phase = $rootScope.$$phase;
         // only apply if not already in digest / apply
         if(phase !== '$apply' && phase !== '$digest') {
           scope.$apply(function() {
@@ -111,13 +109,13 @@ var CamundaFormAngular = CamundaForm.extend(
           doFireEvent();
         }
 
-      }]);
-    }
-  });
+    }]);
+  }
+});
 
 module.exports = CamundaFormAngular;
 
-},{"./../../forms/camunda-form":33,"./../../forms/constants":34}],2:[function(_dereq_,module,exports){
+},{"./../../forms/camunda-form":32,"./../../forms/constants":33}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var angular = (window.angular),
@@ -203,7 +201,7 @@ ngModule.directive('camVariableType', [function() {
       ctrl.$parsers.unshift(validate);
       ctrl.$formatters.push(validate);
 
-      $attrs.$observe('camVariableType', function() {
+      $attrs.$observe('camVariableType', function(comparisonModel){
         return validate(ctrl.$viewValue);
       });
 
@@ -218,7 +216,7 @@ ngModule.directive('camVariableType', [function() {
 module.exports = CamundaFormAngular;
 
 
-},{"./../../forms/type-util":40,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
+},{"./../../forms/type-util":39,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
@@ -228,7 +226,7 @@ module.exports = {
 };
 
 
-},{"./../api-client":6,"./../utils":42,"./forms":2}],4:[function(_dereq_,module,exports){
+},{"./../api-client":6,"./../utils":41,"./forms":2}],4:[function(_dereq_,module,exports){
 'use strict';
 
 // var HttpClient = require('./http-client');
@@ -297,7 +295,7 @@ function noop() {}
  */
 var AbstractClientResource = BaseClass.extend(
 /** @lends AbstractClientResource.prototype */
-  {
+{
   /**
    * Initializes a AbstractClientResource instance
    *
@@ -306,23 +304,23 @@ var AbstractClientResource = BaseClass.extend(
    *
    * @method initialize
    */
-    initialize: function() {
+  initialize: function() {
     // do something to initialize the instance
     // like copying the Model http property to the "this" (instanciated)
-      this.http = this.constructor.http;
-    }
-  },
+    this.http = this.constructor.http;
+  }
+},
 
 
 /** @lends AbstractClientResource */
-  {
+{
   /**
    * Path used by the resource to perform HTTP queries
    *
    * @abstract
    * @memberOf CamSDK.client.AbstractClientResource
    */
-    path: '',
+  path: '',
 
   /**
    * Object hosting the methods for HTTP queries.
@@ -330,7 +328,7 @@ var AbstractClientResource = BaseClass.extend(
    * @abstract
    * @memberof CamSDK.client.AbstractClientResource
    */
-    http: {},
+  http: {},
 
 
 
@@ -343,7 +341,7 @@ var AbstractClientResource = BaseClass.extend(
    * @param  {!Object|Object[]}  attributes
    * @param  {requestCallback} [done]
    */
-    create: function() {},
+  create: function(attributes, done) {},
 
 
   /**
@@ -357,70 +355,70 @@ var AbstractClientResource = BaseClass.extend(
    * @param  {?Object.<String, String>} params
    * @param  {requestCallback} [done]
    */
-    list: function(params, done) {
+  list: function(params, done) {
     // allows to pass only a callback
-      if (typeof params === 'function') {
-        done = params;
-        params = {};
-      }
-      params = params || {};
-      done = done || noop;
+    if (typeof params === 'function') {
+      done = params;
+      params = {};
+    }
+    params = params || {};
+    done = done || noop;
 
     // var likeExp = /Like$/;
-      var self = this;
-      var results = {
-        count: 0,
-        items: []
-      };
+    var self = this;
+    var results = {
+      count: 0,
+      items: []
+    };
 
-      var combinedPromise = Q.defer();
+    var combinedPromise = Q.defer();
 
-      var countFinished = false;
-      var listFinished = false;
+    var countFinished = false;
+    var listFinished = false;
 
-      var checkCompletion = function() {
-        if(listFinished && countFinished) {
-          self.trigger('loaded', results);
-          combinedPromise.resolve(results);
-          done(null, results);
-        }
-      };
+    var checkCompletion = function() {
+      if(listFinished && countFinished) {
+        self.trigger('loaded', results);
+        combinedPromise.resolve(results);
+        done(null, results);
+      }
+    };
 
     // until a new webservice is made available,
     // we need to perform 2 requests.
     // Since they are independent requests, make them asynchronously
-      self.count(params, function(err, count) {
-        if(err) {
+    self.count(params, function(err, count) {
+      if(err) {
+        self.trigger('error', err);
+        combinedPromise.reject(err);
+        done(err);
+      } else {
+        results.count = count;
+        countFinished = true;
+        checkCompletion();
+      }
+    });
+
+    self.http.get(self.path, {
+      data: params,
+      done: function (err, itemsRes) {
+        if (err) {
           self.trigger('error', err);
           combinedPromise.reject(err);
           done(err);
         } else {
-          results.count = count;
-          countFinished = true;
+          results.items = itemsRes;
+          // QUESTION: should we return that too?
+          results.firstResult = parseInt(params.firstResult || 0, 10);
+          results.maxResults = results.firstResult + parseInt(params.maxResults || 10, 10);
+          listFinished = true;
           checkCompletion();
         }
-      });
+      }
+    });
 
-      self.http.get(self.path, {
-        data: params,
-        done: function(err, itemsRes) {
-          if (err) {
-            self.trigger('error', err);
-            combinedPromise.reject(err);
-            done(err);
-          } else {
-            results.items = itemsRes;
-          // QUESTION: should we return that too?
-            results.firstResult = parseInt(params.firstResult || 0, 10);
-            results.maxResults = results.firstResult + parseInt(params.maxResults || 10, 10);
-            listFinished = true;
-            checkCompletion();
-          }
-        }
-      });
-
-      return combinedPromise.promise;
-    },
+    return combinedPromise.promise;
+  },
 
   /**
    * Fetch a count of instances
@@ -433,38 +431,38 @@ var AbstractClientResource = BaseClass.extend(
    * @param  {?Object.<String, String>} params
    * @param  {requestCallback} [done]
    */
-    count: function(params, done) {
+  count: function(params, done) {
     // allows to pass only a callback
-      if (typeof params === 'function') {
-        done = params;
-        params = {};
-      }
-      params = params || {};
-      done = done || noop;
-      var self = this;
-      var deferred = Q.defer();
+    if (typeof params === 'function') {
+      done = params;
+      params = {};
+    }
+    params = params || {};
+    done = done || noop;
+    var self = this;
+    var deferred = Q.defer();
 
-      this.http.get(this.path +'/count', {
-        data: params,
-        done: function(err, result) {
-          if (err) {
+    this.http.get(this.path +'/count', {
+      data: params,
+      done: function(err, result) {
+        if (err) {
           /**
            * @event CamSDK.AbstractClientResource#error
            * @type {Error}
            */
-            self.trigger('error', err);
+          self.trigger('error', err);
 
-            deferred.reject(err);
-            done(err);
-          } else {
-            deferred.resolve(result.count);
-            done(null, result.count);
-          }
+          deferred.reject(err);
+          done(err);
+        } else {
+          deferred.resolve(result.count);
+          done(null, result.count);
         }
-      });
+      }
+    });
 
-      return deferred.promise;
-    },
+    return deferred.promise;
+  },
 
 
   /**
@@ -477,7 +475,7 @@ var AbstractClientResource = BaseClass.extend(
    * @param  {Object.<String, *>}   attributes
    * @param  {requestCallback} [done]
    */
-    update: function() {},
+  update: function(ids, attributes, done) {},
 
 
 
@@ -490,15 +488,15 @@ var AbstractClientResource = BaseClass.extend(
    * @param  {!String|String[]}  ids
    * @param  {requestCallback} [done]
    */
-    delete: function() {}
-  });
+  delete: function(ids, done) {}
+});
 
 
 Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":31,"./../events":32,"q":48}],5:[function(_dereq_,module,exports){
+},{"./../base-class":30,"./../events":31,"q":47}],5:[function(_dereq_,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -584,10 +582,10 @@ HttpClient.prototype.post = function(path, options) {
 
   // Buffer object is only available in node.js environement
   if (typeof Buffer !== 'undefined') {
-    Object.keys(options.fields || {}).forEach(function(field) {
+    Object.keys(options.fields || {}).forEach(function (field) {
       req.field(field, options.fields[field]);
     });
-    (options.attachments || []).forEach(function(file, idx) {
+    (options.attachments || []).forEach(function (file, idx) {
       req.attach('data_'+idx, new Buffer(file.content), file.name);
     });
   }
@@ -700,7 +698,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"./../events":32,"./../utils":42,"buffer":43,"q":48,"superagent":49}],6:[function(_dereq_,module,exports){
+},{"./../events":31,"./../utils":41,"buffer":42,"q":47,"superagent":48}],6:[function(_dereq_,module,exports){
 'use strict';
 var Events = _dereq_('./../events');
 
@@ -721,7 +719,7 @@ var Events = _dereq_('./../events');
  * @memberof CamSDK.client
  *
  * @param  {Object} config                  used to provide necessary configuration
- * @param  {String} [config.engine=default] false to define absolute apiUri
+ * @param  {String} [config.engine=default]
  * @param  {String} config.apiUri
  * @param  {String} [config.headers]        Headers that should be used for all Http requests.
  */
@@ -736,10 +734,7 @@ function CamundaClient(config) {
 
   Events.attach(this);
 
-  // use 'default' engine
-  config.engine = typeof config.engine !== 'undefined'
-    ? config.engine
-    : 'default';
+  config.engine = config.engine || 'default';
 
   // mock by default.. for now
   config.mock =  typeof config.mock !== 'undefined' ? config.mock : true;
@@ -749,10 +744,10 @@ function CamundaClient(config) {
   this.HttpClient = config.HttpClient || CamundaClient.HttpClient;
 
   this.baseUrl = config.apiUri;
-  if (config.engine) {
-    this.baseUrl += (this.baseUrl.slice(-1) !== '/' ? '/' : '');
-    this.baseUrl += 'engine/'+ config.engine;
+  if(this.baseUrl.slice(-1) !== '/') {
+    this.baseUrl += '/';
   }
+  this.baseUrl += 'engine/'+ config.engine;
 
   this.config = config;
 
@@ -768,7 +763,7 @@ function CamundaClient(config) {
 CamundaClient.HttpClient = _dereq_('./http-client');
 
 // provide an isolated scope
-(function(proto) {
+(function(proto){
   /**
    * configuration storage
    * @memberof CamSDK.client.CamundaClient.prototype
@@ -794,7 +789,6 @@ CamundaClient.HttpClient = _dereq_('./http-client');
     _resources['process-definition']  = _dereq_('./resources/process-definition');
     _resources['process-instance']    = _dereq_('./resources/process-instance');
     _resources['task']                = _dereq_('./resources/task');
-    _resources['task-report']                = _dereq_('./resources/task-report');
     _resources['variable']            = _dereq_('./resources/variable');
     _resources['case-execution']      = _dereq_('./resources/case-execution');
     _resources['case-instance']       = _dereq_('./resources/case-instance');
@@ -880,10 +874,10 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":32,"./http-client":5,"./resources/authorization":7,"./resources/batch":8,"./resources/case-definition":9,"./resources/case-execution":10,"./resources/case-instance":11,"./resources/decision-definition":12,"./resources/deployment":13,"./resources/execution":14,"./resources/external-task":15,"./resources/filter":16,"./resources/group":17,"./resources/history":18,"./resources/incident":19,"./resources/job":21,"./resources/job-definition":20,"./resources/metrics":22,"./resources/migration":23,"./resources/process-definition":24,"./resources/process-instance":25,"./resources/task":27,"./resources/task-report":26,"./resources/tenant":28,"./resources/user":29,"./resources/variable":30}],7:[function(_dereq_,module,exports){
+},{"./../events":31,"./http-client":5,"./resources/authorization":7,"./resources/batch":8,"./resources/case-definition":9,"./resources/case-execution":10,"./resources/case-instance":11,"./resources/decision-definition":12,"./resources/deployment":13,"./resources/execution":14,"./resources/external-task":15,"./resources/filter":16,"./resources/group":17,"./resources/history":18,"./resources/incident":19,"./resources/job":21,"./resources/job-definition":20,"./resources/metrics":22,"./resources/migration":23,"./resources/process-definition":24,"./resources/process-instance":25,"./resources/task":26,"./resources/tenant":27,"./resources/user":28,"./resources/variable":29}],7:[function(_dereq_,module,exports){
 'use strict';
 
-var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var AbstractClientResource = _dereq_("./../abstract-client-resource");
 
 
 
@@ -1091,11 +1085,6 @@ module.exports = Batch;
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
 
 /**
- * No-Op callback
- */
-function noop() {}
-
-/**
  * CaseDefinition Resource
  * @class
  * @memberof CamSDK.client.resource
@@ -1153,34 +1142,9 @@ CaseDefinition.list = function(params, done) {
  * @param {String} [params.businessKey]     The business key the case instance is to be initialized with. The business key identifies the case instance in the context of the given case definition.
  */
 CaseDefinition.create = function(params, done) {
-  var url = this.path + '/';
-
-  if (params.id) {
-    url = url + params.id;
-  } else {
-    url = url + 'key/' + params.key;
-
-    if (params.tenantId) {
-      url = url + '/tenant-id/' + params.tenantId;
-    }
-  }
-
-  return this.http.post(url + '/create', {
+  return this.http.post(this.path + '/' + (params.id ? params.id : 'key/' + params.key ) + '/create', {
     data: params,
     done: done
-  });
-};
-
-
-/**
- * Retrieves the CMMN XML of this case definition.
- * @param  {uuid}     id   The id of the case definition.
- * @param  {Function} done
- */
-CaseDefinition.xml = function(data, done) {
-  var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/xml';
-  return this.http.get(path, {
-    done: done || noop
   });
 };
 
@@ -1246,35 +1210,17 @@ CaseExecution.complete = function(executionId, params, done) {
   });
 };
 
-/**
- * Deletes a variable in the context of a given case execution. Deletion does not propagate upwards in the case execution hierarchy.
- */
-CaseExecution.deleteVariable = function(data, done) {
-  return this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
-    done: done
-  });
-};
-
-
-/**
- * Updates or deletes the variables in the context of an execution.
- * The updates do not propagate upwards in the execution hierarchy.
- * Deletion precede updates.
- * So, if a variable is updated AND deleted, the updates overrides the deletion.
- */
-CaseExecution.modifyVariables = function(data, done) {
-  return this.http.post(this.path + '/' + data.id + '/localVariables', {
-    data: data,
-    done: done
-  });
-};
-
 module.exports = CaseExecution;
 
 },{"./../abstract-client-resource":4}],11:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+
+/**
+ * No-Op callback
+ */
+function noop() {}
 
 /**
  * CaseInstance Resource
@@ -1299,13 +1245,6 @@ CaseInstance.list = function(params, done) {
 
 CaseInstance.close = function(instanceId, params, done) {
   return this.http.post(this.path + '/' + instanceId + '/close', {
-    data: params,
-    done: done
-  });
-};
-
-CaseInstance.terminate = function(instanceId, params, done) {
-  return this.http.post(this.path + '/' + instanceId + '/terminate', {
     data: params,
     done: done
   });
@@ -1447,7 +1386,7 @@ Deployment.path = 'deployment';
  * @param	 {String} [options.tenantId]
  * @param  {Function} done
  */
-Deployment.create = function(options, done) {
+Deployment.create = function (options, done) {
   var fields = {
     'deployment-name': options.deploymentName
   };
@@ -1467,9 +1406,9 @@ Deployment.create = function(options, done) {
   if (options.deployChangedOnly) {
     fields['deploy-changed-only'] = 'true';
   }
-
+  
   if (options.tenantId) {
-    fields['tenant-id'] = options.tenantId;
+  	fields['tenant-id'] = options.tenantId;
   }
 
   return this.http.post(this.path +'/create', {
@@ -1492,7 +1431,7 @@ Deployment.create = function(options, done) {
  *
  * @param  {Function} done
  */
-Deployment.delete = function(id, options, done) {
+Deployment.delete = function (id, options, done) {
   var path = this.path + '/' + id;
 
   if (options) {
@@ -1541,7 +1480,7 @@ Deployment.delete = function(id, options, done) {
  *                                          no more results left.
  * @param  {Function} done
  */
-Deployment.list = function() {
+Deployment.list = function () {
   return AbstractClientResource.list.apply(this, arguments);
 };
 
@@ -1627,7 +1566,7 @@ Execution.path = 'execution';
 /**
  * Deletes a variable in the context of a given execution. Deletion does not propagate upwards in the execution hierarchy.
  */
-Execution.deleteVariable = function(data, done) {
+Execution.deleteVariable = function (data, done) {
   return this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
     done: done
   });
@@ -1837,7 +1776,7 @@ ExternalTask.unlock = function(params, done) {
  * @param {String} [params.retries]      The number of retries to set for the external task. Must be >= 0. If this is 0, an incident is created and the task cannot be fetched anymore unless the retries are increased again.
  */
 ExternalTask.retries = function(params, done) {
-  return this.http.put(this.path + '/' + params.id + '/retries', {
+  return this.http.post(this.path + '/' + params.id + '/retries', {
     data: params,
     done: done
   });
@@ -2081,7 +2020,7 @@ Group.options = function(options, done) {
  * @param  {String}   group.type
  * @param  {Function} done
  */
-Group.create = function(options, done) {
+Group.create = function (options, done) {
   return this.http.post(this.path +'/create', {
     data: options,
     done: done || noop
@@ -2099,7 +2038,7 @@ Group.create = function(options, done) {
  * @param {String} [options.member]    Only retrieve groups where the given user id is a member of.
  * @param  {Function} done
  */
-Group.count = function(options, done) {
+Group.count = function (options, done) {
   if (arguments.length === 1) {
     done = options;
     options = {};
@@ -2121,7 +2060,7 @@ Group.count = function(options, done) {
  * @param  {String} [options.id]    The id of the group, can be a property (id) of an object
  * @param  {Function} done
  */
-Group.get = function(options, done) {
+Group.get = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
   return this.http.get(this.path + '/' + utils.escapeUrl(id), {
@@ -2154,7 +2093,7 @@ Group.get = function(options, done) {
  *
  * @param  {Function} done
  */
-Group.list = function(options, done) {
+Group.list = function (options, done) {
   if (arguments.length === 1) {
     done = options;
     options = {};
@@ -2229,7 +2168,7 @@ Group.delete = function(options, done) {
 
 module.exports = Group;
 
-},{"../../utils":42,"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
+},{"../../utils":41,"./../abstract-client-resource":4}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2387,26 +2326,6 @@ History.processInstanceCount = function(params, done) {
   });
 };
 
-/**
- * Delete finished process instances asynchronously. With creation of a batch operation.
- *
- * @param params - either list of process instance ID's or an object corresponding to a processInstances
- *                  POST request based query
- * @param done - a callback function
- * @returns {*}
- */
-History.deleteProcessInstancesAsync = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.post(this.path + '/process-instance/delete', {
-    data: params,
-    done: done
-  });
-};
-
 
 
 /**
@@ -2526,7 +2445,7 @@ History.batchDelete = function(id, done) {
  * @param  {Object}   [params.startedBefore]        Date before which the process instance were started
  * @param  {Function} done
  */
-History.report = function(params, done) {
+History.report = function (params, done) {
   if (arguments.length < 2) {
     done = arguments[0];
     params = {};
@@ -2551,7 +2470,7 @@ History.report = function(params, done) {
  * @param  {Object}   [params.startedBefore]        Date before which the process instance were started
  * @param  {Function} done
  */
-History.reportAsCsv = function(params, done) {
+History.reportAsCsv = function (params, done) {
   if (arguments.length < 2) {
     done = arguments[0];
     params = {};
@@ -2567,483 +2486,8 @@ History.reportAsCsv = function(params, done) {
   });
 };
 
-/**
- * Query for historic task instances that fulfill the given parameters.
- *
- * @param  {Object}   [params]
- * @param  {uuid}     [params.taskId]                           Filter by taskId.
- * @param  {uuid}     [params.taskParentTaskId]                 Filter by parent task id.
- * @param  {uuid}     [params.processInstanceId]                Filter by process instance id.
- * @param  {uuid}     [params.executionId]                      Filter by the id of the execution that executed the task.
- * @param  {uuid}     [params.processDefinitionId]              Filter by process definition id.
- * @param  {String}   [params.processDefinitionKey]             Restrict to tasks that belong to a process definition with the given key.
- * @param  {String}   [params.processDefinitionName]            Restrict to tasks that belong to a process definition with the given name.
- * @param  {uuid}     [params.caseInstanceId]                   Filter by case instance id.
-
- * @param  {uuid}     [params.caseExecutionId]                  Filter by the id of the case execution that executed the task.
- * @param  {uuid}     [params.caseDefinitionId]                 Filter by case definition id.
- * @param  {String}   [params.caseDefinitionKey]                Restrict to tasks that belong to a case definition with the given key.
- * @param  {String}   [params.caseDefinitionName]               Restrict to tasks that belong to a case definition with the given name.
- * @param  {uuid[]}   [params.activityInstanceIdIn]             Only include tasks which belong to one of the passed activity instance ids.
- *                                                              Must be a json array of activity instance ids.
- * @param  {String}   [params.taskName]                         Restrict to tasks that have the given name.
- * @param  {String}   [params.taskNameLike]                     Restrict to tasks that have a name with the given parameter value as substring.
- * @param  {String}   [params.taskDescription]                  Restrict to tasks that have the given description.
- * @param  {String}   [params.taskDescriptionLike]              Restrict to tasks that have a description that has the parameter value as a substring.
- * @param  {String}   [params.taskDefinitionKey]                Restrict to tasks that have the given key.
- * @param  {String}   [params.taskDeleteReason]                 Restrict to tasks that have the given delete reason.
- * @param  {String}   [params.taskDeleteReasonLike]             Restrict to tasks that have a delete reason that has the parameter value as a substring.
- * @param  {String}   [params.taskAssignee]                     Restrict to tasks that the given user is assigned to.
- * @param  {String}   [params.taskAssigneeLike]                 Restrict to tasks that are assigned to users with the parameter value as a substring.
- * @param  {String}   [params.taskOwner]                        Restrict to tasks that the given user owns.
- * @param  {String}   [params.taskOwnerLike]                    Restrict to tasks that are owned by users with the parameter value as a substring.
- * @param  {String}   [params.taskPriority]                     Restrict to tasks that have the given priority.
- * @param  {String}   [params.assigned]                         If set to true, restricts the query to all tasks that are assigned.
- *                                                              Values may be `true` or `false`.
- * @param  {String}   [params.unassigned]                       If set to true, restricts the query to all tasks that are unassigned.
- *                                                              Values may be `true` or `false`.
- * @param  {String}   [params.finished]                         Only include finished tasks. Value may only be true, as false is the default behavior.
- * @param  {String}   [params.unfinished]                       Only include unfinished tasks. Value may only be true, as false is the default behavior.
- * @param  {String}   [params.processFinished]                  Only include tasks of finished processes. Value may only be true, as false is the default behavior.
- * @param  {String}   [params.processUnfinished]                Only include tasks of unfinished processes. Value may only be true, as false is the default behavior.
- * @param  {Date}     [params.taskDueDate]                      Restrict to tasks that are due on the given date.
- *                                                              The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.taskDueDateBefore]                RestRestrict to tasks that are due before the given date.
- *                                                              The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.taskDueDateAfter]                 Restrict to tasks that are due after the given date.
- *                                                              The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.taskFollowUpDate]                 ReRestrict to tasks that have a followUp date on the given date.
- *                                                              The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.taskFollowUpDateBefore]           Restrict to tasks that have a followUp date before the given date.
- *                                                              The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.taskFollowUpDateAfter]            Restrict to tasks that have a followUp date after the given date.
- *                                                              The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {uuid[]}   [params.tenantIdIn]                       Filter by a comma-separated list of tenant ids. A task instance must have one of the given tenant ids.
- *                                                              Must be a json array of tenant ids.
- * @param  {Object[]} [params.taskVariables]                    A JSON array to only include process instances that have/had variables with certain values. The array consists of objects with the three properties name, operator and value. name (String) is the variable name, operator (String) is the comparison operator to be used and value the variable value.
- *                                                              `value` may be String, Number or Boolean.
- *                                                              Valid operator values are:
- *                                                              - `eq` - equal to
- *                                                              - `neq` - not equal to
- *                                                              - `gt` - greater than
- *                                                              - `gteq` - greater than or equal to
- *                                                              - `lt` - lower than
- *                                                              - `lteq` - lower than or equal to
- *                                                              - `like`
- * @param  {Object[]} [params.processVariables]                 A JSON array to only include process instances that have/had variables with certain values. The array consists of objects with the three properties name, operator and value. name (String) is the variable name, operator (String) is the comparison operator to be used and value the variable value.
- *                                                              `value` may be String, Number or Boolean.
- *                                                              Valid operator values are:
- *                                                              - `eq` - equal to
- *                                                              - `neq` - not equal to
- *                                                              - `gt` - greater than
- *                                                              - `gteq` - greater than or equal to
- *                                                              - `lt` - lower than
- *                                                              - `lteq` - lower than or equal to
- *                                                              - `like`
- * @param  {String}   [params.taskInvolvedUser]                 Restrict on the historic identity links of any type of user.
- * @param  {String}   [params.taskInvolvedGroup]                Restrict on the historic identity links of any type of group.
- * @param  {String}   [params.taskHadCandidateUser]             Restrict on the historic identity links of type candidate user.
- * @param  {String}   [params.taskHadCandidateGroup]            Restrict on the historic identity links of type candidate group.
- * @param  {String}   [params.withCandidateGroups]              Only include tasks which have a candidate group. Value may only be true, as false is the default behavior.
- * @param  {String}   [params.withoutCandidateGroups]           Only include tasks which have no candidate group. Value may only be true, as false is the default behavior.
- * @param  {String}   [params.sortBy]                           Sort the results by a given criterion.
- *                                                              Valid values are taskId, activityInstanceID, processDefinitionId, processInstanceId, executionId,
- *                                                              duration, endTime, startTime, taskName, taskDescription, assignee, owner, dueDate, followUpDate,
- *                                                              deleteReason, taskDefinitionKey, priority, caseDefinitionId, caseInstanceId, caseExecutionId and
- *                                                              tenantId. Must be used in conjunction with the sortOrder parameter.
- * @param  {String}   [params.sortOrder]                        Sort the results in a given order.
- *                                                              Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
- * @param  {Number}   [params.firstResult]                      Pagination of results. Specifies the index of the first result to return.
- * @param  {Number}   [params.maxResults]                       Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
-
- * @param  {Function} done
- */
-History.task = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  var body = {};
-  var query = {};
-  var queryParams = ['firstResult', 'maxResults'];
-
-  for (var p in params) {
-    if (queryParams.indexOf(p) > -1) {
-      query[p] = params[p];
-    }
-    else {
-      body[p] = params[p];
-    }
-  }
-
-  return this.http.post(this.path + '/task', {
-    data: body,
-    query: query,
-    done: done
-  });
-};
-
-/**
- * Query for the number of historic task instances that fulfill the given parameters.
- * This method takes the same parameters as `History.task`.
- */
-History.taskCount = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.post(this.path + '/task/count', {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Query for a historic task instance duration report.
- *
- * @param  {Object}   [params]
- * @param  {Date}     [params.completedBefore]    Restrict to tasks which are completed before a given date.
- *                                                The date must have the format `yyyy-MM-dd'T'HH:mm:ss`,
- *                                                e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.completedAfter]     Restrict to tasks which are completed after a given date.
- *                                                The date must have the format `yyyy-MM-dd'T'HH:mm:ss`,
- *                                                e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.periodUnit]         Can be one of `month` or `quarter`, defaults to `month`
- * @param  {Function}  done
- */
-History.taskDurationReport = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  params.reportType = params.reportType || 'duration';
-  params.periodUnit = params.periodUnit || 'month';
-
-  return this.http.get(this.path + '/task/report', {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Query for a completed task instance report
- *
- * @param  {Object}   [params]
- * @param  {Date}     [params.completedBefore]    Restrict to tasks which are completed before a given date.
- *                                                The date must have the format `yyyy-MM-dd'T'HH:mm:ss`,
- *                                                e.g., 2013-01-23T14:42:45.
- * @param  {Date}     [params.completedAfter]     Restrict to tasks which are completed after a given date.
- *                                                The date must have the format `yyyy-MM-dd'T'HH:mm:ss`,
- *                                                e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.groupBy]            Groups the task report by `taskDefinitionKey` (Default) or
- *                                                `processDefinitionKey`. Valid values are `taskDefinition` or
- *                                                `processDefinition`.
- * @param done
- * @returns {*}
- */
-History.taskReport = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  params.reportType = params.reportType || 'count';
-
-  return this.http.get(this.path + '/task/report', {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Query for historic case instances that fulfill the given parameters.
- *
- * @param  {Object}   [params]
- * @param  {uuid}     [params.caseInstanceId]                Filter by case instance id.
- * @param  {uuid[]}   [params.caseInstanceIds]               Filter by case instance ids.
- *                                                           Must be a json array case instance ids.
- *
- * @param  {uuid}     [params.caseDefinitionId]              Filter by the case definition the instances run on.
- * @param  {String}   [params.caseDefinitionKey]             Filter by the key of the case definition the instances run on.
- * @param  {String[]} [params.caseDefinitionKeyNotIn]        Exclude instances that belong to a set of case definitions.
- *
- * @param  {String}   [params.caseDefinitionName]            Filter by the name of the case definition the instances run on.
- * @param  {String}   [params.caseDefinitionNameLike]        Filter by case definition names that the parameter is a substring of.
- *
- * @param  {String}   [params.caseInstanceBusinessKey]       Filter by case instance business key.
- * @param  {String}   [params.caseInstanceBusinessKeyLike]   Filter by case instance business key that the parameter is a substring of.
- *
- *
- * @param  {String}   [params.createdBefore]                 Restrict to instances that were created before the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.createdAfter]                  Restrict to instances that were created after the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- *
- * @param  {String}   [params.closedBefore]                  Restrict to instances that were closed before the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.closedAfter]                   Restrict to instances that were closed after the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- *
- * @param  {String}   [params.createdBy]                     Only include case instances that were created by the given user.
- *
- *
- * @param  {uuid}     [params.superCaseInstanceId]           Restrict query to all case instances that are sub case instances of the given case instance.
- *                                                           Takes a case instance id.
- * @param  {uuid}     [params.subCaseInstanceId]             Restrict query to one case instance that has a sub case instance with the given id.
- *
- * @param  {uuid}     [params.superProcessInstanceId]        Restrict query to all process instances that are sub case instances of the given process instance.
- *                                                           Takes a process instance id.
- * @param  {uuid}     [params.subProcessInstanceId]          Restrict query to one case instance that has a sub process instance with the given id.
- *
- * @param  {uuid}     [params.tenantIdIn]                    Filter by a comma-separated list of tenant ids. A case instance must have one of the given tenant ids.
- *
- * @param  {Boolean}  [params.active]                        Only include active case instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.completed]                     Only include completed case instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.terminated]                    Only include terminated case instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.closed]                        Only include closed case instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.notClosed]                     Only include not closed case instances.
- *                                                           Values may be `true` or `false`.
- *
- * @param  {Object[]} [params.variables]                     A JSON array to only include case instances that have/had variables with certain values. The array consists of objects with the three properties name, operator and value. name (String) is the variable name, operator (String) is the comparison operator to be used and value the variable value.
- *                                                           `value` may be String, Number or Boolean.
- *                                                           Valid operator values are:
- *                                                           - `eq` - equal to
- *                                                           - `neq` - not equal to
- *                                                           - `gt` - greater than
- *                                                           - `gteq` - greater than or equal to
- *                                                           - `lt` - lower than
- *                                                           - `lteq` - lower than or equal to
- *                                                           - `like`
- *
- * @param  {String}   [params.sortBy]                        Sort the results by a given criterion.
- *                                                           Valid values are instanceId, definitionId, businessKey, startTime, endTime, duration. Must be used in conjunction with the sortOrder parameter.
- * @param  {String}   [params.sortOrder]                     Sort the results in a given order.
- *                                                           Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
- * @param  {Number}   [params.firstResult]                   Pagination of results. Specifies the index of the first result to return.
- * @param  {Number}   [params.maxResults]                    Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
-
- * @param  {Function} done
- */
-History.caseInstance = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  var body = {};
-  var query = {};
-  var queryParams = ['firstResult', 'maxResults'];
-
-  for (var p in params) {
-    if (queryParams.indexOf(p) > -1) {
-      query[p] = params[p];
-    }
-    else {
-      body[p] = params[p];
-    }
-  }
-
-  return this.http.post(this.path + '/case-instance', {
-    data: body,
-    query: query,
-    done: done
-  });
-};
-
-
-/**
- * Query for the number of historic case instances that fulfill the given parameters.
- * This method takes the same parameters as `History.caseInstance`.
- */
-History.caseInstanceCount = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.post(this.path + '/case-instance/count', {
-    data: params,
-    done: done
-  });
-};
-
-
-/**
- * Query for historic case activty instances that fulfill the given parameters.
- *
- * @param  {Object}   [params]
- * @param  {uuid}     [params.caseActivityInstanceId]        Filter by case activity instance id.
- * @param  {String}   [params.caseExecutionId]               Filter by the id of the case execution that executed the case activity instance.
- * @param  {uuid}     [params.caseInstanceId]                Filter by case instance id.
- *
- * @param  {uuid}     [params.caseDefinitionId]              Filter by the case definition the instances run on.
- *
- * @param  {String}   [params.caseActivityId]                Filter by the case activity id.
- * @param  {String}   [params.caseActivityName]              Filter by the case activity name.
- * @param  {String}   [params.caseActivityType]              Filter by the case activity type.
- *
- * @param  {String}   [params.createdBefore]                 Restrict to instances that were created before the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.createdAfter]                  Restrict to instances that were created after the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- *
- * @param  {String}   [params.endedBefore]                   Restrict to instances that were ended before the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- * @param  {String}   [params.endedAfter]                    Restrict to instances that were ended after the given date.
- *                                                           The date must have the format `yyyy-MM-dd'T'HH:mm:ss`, e.g., 2013-01-23T14:42:45.
- *
- * @param  {Boolean}  [params.required]                      Only include required case activity instances.
- *                                                           Values may be `true` or `false`.
- *
- * @param  {Boolean}  [params.finished]                      Only include finished case activity instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.unfinished]                    Only include unfinished case activity instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.available]                     Only include available case activity instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.enabled]                       Only include enabled case activity instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.disabled]                      Only include disabled case activity instances.
- *                                                           Values may be `true` or `false`.
- * @param  {Boolean}  [params.active]                        Only include active case activity instances.
- *                                                           Values may be `true` or `false`.
- *
- * @param  {Boolean}  [params.completed]                     Only include completed case activity instances.
- *                                                           Values may be `true` or `false`.
- *
- * @param  {Boolean}  [params.terminated]                    Only include terminated case activity instances.
- *                                                           Values may be `true` or `false`.
- *
- * @param  {uuid[]}   [params.tenantIdIn]                    Filter by a comma-separated list of tenant ids. A case activity instance must have one of the given tenant ids.
- *
- * @param  {String}   [params.sortBy]                        Sort the results by a given criterion.
- *                                                           Valid values are caseActivityInstanceId, caseInstanceId, caseExecutionId, caseActivityId, caseActivityName, createTime, endTime, duration,
- *                                                           caseDefinitionId and tenantId. Must be used in conjunction with the sortOrder parameter.
- * @param  {String}   [params.sortOrder]                     Sort the results in a given order.
- *                                                           Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
- * @param  {Number}   [params.firstResult]                   Pagination of results. Specifies the index of the first result to return.
- * @param  {Number}   [params.maxResults]                    Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
-
- * @param  {Function} done
- */
-History.caseActivityInstance = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.get(this.path + '/case-activity-instance', {
-    data: params,
-    done: done
-  });
-};
-
-
-/**
- * Query for the number of historic case activity instances that fulfill the given parameters.
- * This method takes the same parameters as `History.caseActivityInstance`.
- */
-History.caseActivityInstanceCount = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.get(this.path + '/case-activity-instance/count', {
-    data: params,
-    done: done
-  });
-};
-
-
-/**
- * Query for historic variable instances that fulfill the given parameters.
- *
- * @param  {Object}   [params]
- * @param  {uuid}     [params.variableName]                 Filter by variable name.
- * @param  {String}   [params.variableNameLike]             Restrict to variables with a name like the parameter.
- * @param  {uuid[]}   [params.variableValue]                Filter by variable value.
- *
- * @param  {uuid}     [params.processInstanceId]            Filter by the process instance the variable belongs to.
- * @param  {String[]} [params.executionIdIn]                Filter by the execution ids.
- * @param  {String}   [params.caseInstanceId]               Filter by the case instance id.
- * @param  {String[]} [params.caseExecutionIdIn]            Filter by the case execution ids.
- * @param  {String[]} [params.taskIdIn]                     Filter by the task ids.
- * @param  {String[]} [params.activityInstanceIdIn]         Filter by the activity instance ids.
- *
- * @param  {uuid[]}   [params.tenantIdIn]                    Filter by a comma-separated list of tenant ids. A case activity instance must have one of the given tenant ids.
- *
- * @param  {String}   [params.sortBy]                        Sort the results by a given criterion.
- *                                                           Valid values are instanceId, variableName and tenantId. Must be used in conjunction with the sortOrder parameter.
- * @param  {String}   [params.sortOrder]                     Sort the results in a given order.
- *                                                           Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
- * @param  {Number}   [params.firstResult]                   Pagination of results. Specifies the index of the first result to return.
- * @param  {Number}   [params.maxResults]                    Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
-
- * @param  {Function} done
- */
-History.variableInstance = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  var body = {};
-  var query = {};
-  var queryParams = ['firstResult', 'maxResults', 'deserializeValues'];
-
-  for (var p in params) {
-    if (queryParams.indexOf(p) > -1) {
-      query[p] = params[p];
-    }
-    else {
-      body[p] = params[p];
-    }
-  }
-
-  return this.http.post(this.path + '/variable-instance', {
-    data: body,
-    query: query,
-    done: done
-  });
-};
-
-/**
- * Query for the number of historic variable instances that fulfill the given parameters.
- * This method takes the same parameters as `History.variableInstance`.
- */
-History.variableInstanceCount = function(params, done) {
-  if (arguments.length < 2) {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.post(this.path + '/variable-instance/count', {
-    data: params,
-    done: done
-  });
-};
-
-
-History.caseActivityStatistics = function(params, done) {
-
-  var id = params.id || params;
-
-  return this.http.get(this.path + '/case-definition/' + id + '/statistics', {
-    done: done
-  });
-
-};
-
-
 module.exports = History;
+
 
 },{"./../abstract-client-resource":4}],19:[function(_dereq_,module,exports){
 'use strict';
@@ -3110,7 +2554,7 @@ Incident.path = 'incident';
  *
  * @param  {RequestCallback}  done
  */
-Incident.get = function(params, done) {
+Incident.get = function (params, done) {
   return this.http.get(this.path, {
     data: params,
     done: done
@@ -3224,7 +2668,7 @@ Job.path = 'job';
  * @param  {String}   [params.maxResults]           Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
  * @param  {Function} done
  */
-Job.list = function(params, done) {
+Job.list = function (params, done) {
 
   var path = this.path;
 
@@ -3292,28 +2736,12 @@ Metrics.path = 'metrics';
  * @param  {String}   [params.endDate]
  * @param  {Function} done
  */
-Metrics.sum = function(params, done) {
+Metrics.sum = function (params, done) {
 
   var path = this.path + '/' + params.name + '/sum';
   delete params.name;
 
   return this.http.get(path, { data: params, done: done });
-};
-
-/**
- * Retrieves a list of metrics, aggregated for a given interval.
- * @param  {Object}   params
- * @param  {String}   params.name          The name of the metric. Supported names: activity-instance-end, job-acquisition-attempt, job-acquired-success, job-acquired-failure, job-execution-rejected, job-successful, job-failed, job-locked-exclusive, executed-decision-elements
- * @param  {String}   [params.reporter]    The name of the reporter (host), on which the metrics was logged.
- * @param  {String}   [params.startDate]   The start date (inclusive).
- * @param  {String}   [params.endDate]     The end date (exclusive).
- * @param  {Integer}  [params.firstResult] The index of the first result, used for paging.
- * @param  {Integer}  [params.maxResults]  The maximum result size of the list which should be returned. The maxResults can't be set larger than 200. Default: 200
- * @param  {Integer}  [params.interval]    The interval for which the metrics should be aggregated. Time unit is seconds. Default: The interval is set to 15 minutes (900 seconds).
- * @param  {Function} done
- */
-Metrics.byInterval = function(params, done) {
-  return this.http.get(this.path, { data: params, done: done });
 };
 
 module.exports = Metrics;
@@ -3344,7 +2772,7 @@ Migration.path = 'migration';
  * @param  {String}   [params.targetProcessDefinitionId]
  * @param  {Function} done
  */
-Migration.generate = function(params, done) {
+Migration.generate = function (params, done) {
   var path = this.path + '/generate';
 
   return this.http.post(path, {
@@ -3360,7 +2788,7 @@ Migration.generate = function(params, done) {
  * @param  {String}   [params.processInstanceIds]
  * @param  {Function} done
  */
-Migration.execute = function(params, done) {
+Migration.execute = function (params, done) {
   var path = this.path + '/execute';
 
   return this.http.post(path, {
@@ -3376,7 +2804,7 @@ Migration.execute = function(params, done) {
  * @param  {String}   [params.processInstanceIds]
  * @param  {Function} done
  */
-Migration.executeAsync = function(params, done) {
+Migration.executeAsync = function (params, done) {
   var path = this.path + '/executeAsync';
 
   return this.http.post(path, {
@@ -3385,7 +2813,7 @@ Migration.executeAsync = function(params, done) {
   });
 };
 
-Migration.validate = function(params, done) {
+Migration.validate = function (params, done) {
   var path = this.path + '/validate';
 
   return this.http.post(path, {
@@ -3415,26 +2843,26 @@ function noop() {}
  */
 var ProcessDefinition = AbstractClientResource.extend(
 /** @lends  CamSDK.client.resource.ProcessDefinition.prototype */
-  {
+{
   /**
    * Suspends the process definition instance
    *
    * @param  {Object.<String, *>} [params]
    * @param  {requestCallback}    [done]
    */
-    suspend: function(params, done) {
+  suspend: function(params, done) {
     // allows to pass only a callback
-      if (typeof params === 'function') {
-        done = params;
-        params = {};
-      }
-      params = params || {};
-      done = done || noop;
+    if (typeof params === 'function') {
+      done = params;
+      params = {};
+    }
+    params = params || {};
+    done = done || noop;
 
-      return this.http.post(this.path, {
-        done: done
-      });
-    },
+    return this.http.post(this.path, {
+      done: done
+    });
+  },
 
 
   /**
@@ -3442,11 +2870,11 @@ var ProcessDefinition = AbstractClientResource.extend(
    *
    * @param  {Function} [done]
    */
-    stats: function(done) {
-      return this.http.post(this.path, {
-        done: done || noop
-      });
-    },
+  stats: function(done) {
+    return this.http.post(this.path, {
+      done: done || noop
+    });
+  },
 
 
   /**
@@ -3467,19 +2895,19 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {Object} [varname]
    * @param  {Function} [done]
    */
-    start: function(done) {
-      return this.http.post(this.path, {
-        data: {},
-        done: done
-      });
-    }
-  },
+  start: function(done) {
+    return this.http.post(this.path, {
+      data: {},
+      done: done
+    });
+  }
+},
 /** @lends  CamSDK.client.resource.ProcessDefinition */
-  {
+{
   /**
    * API path for the process instance resource
    */
-    path: 'process-definition',
+  path: 'process-definition',
 
 
 
@@ -3490,7 +2918,7 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {uuid}     id    of the process definition to be requested
    * @param  {Function} done
    */
-    get: function(id, done) {
+  get: function(id, done) {
 
     // var pointer = '';
     // if (data.key) {
@@ -3500,10 +2928,10 @@ var ProcessDefinition = AbstractClientResource.extend(
     //   pointer = data.id;
     // }
 
-      return this.http.get(this.path +'/'+ id, {
-        done: done
-      });
-    },
+    return this.http.get(this.path +'/'+ id, {
+      done: done
+    });
+  },
 
 
   /**
@@ -3512,11 +2940,11 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {String}   key    of the process definition to be requested
    * @param  {Function} done
    */
-    getByKey: function(key, done) {
-      return this.http.get(this.path +'/key/'+ key, {
-        done: done
-      });
-    },
+  getByKey: function(key, done) {
+    return this.http.get(this.path +'/key/'+ key, {
+      done: done
+    });
+  },
 
 
   /**
@@ -3565,9 +2993,9 @@ var ProcessDefinition = AbstractClientResource.extend(
    *   //
    * });
    */
-    list: function() {
-      return AbstractClientResource.list.apply(this, arguments);
-    },
+  list: function(params, done) {
+    return AbstractClientResource.list.apply(this, arguments);
+  },
 
 
   /**
@@ -3578,34 +3006,34 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {Array}              [data.names]  of variables to be fetched
    * @param  {Function}           [done]
    */
-    formVariables: function(data, done) {
-      var pointer = '';
-      done = done || noop;
-      if (data.key) {
-        pointer = 'key/'+ data.key;
-      }
-      else if (data.id) {
-        pointer = data.id;
-      }
-      else {
-        var err = new Error('Process definition task variables needs either a key or an id.');
-        done(err);
-        return Q.reject(err);
-      }
+  formVariables: function(data, done) {
+    var pointer = '';
+    done = done || noop;
+    if (data.key) {
+      pointer = 'key/'+ data.key;
+    }
+    else if (data.id) {
+      pointer = data.id;
+    }
+    else {
+      var err = new Error('Process definition task variables needs either a key or an id.');
+      done(err);
+      return Q.reject(err);
+    }
 
-      var queryData = {
-        deserializeValues: data.deserializeValues
-      };
+    var queryData = {
+      deserializeValues: data.deserializeValues
+    };
 
-      if(data.names) {
-        queryData.variableNames = (data.names || []).join(',');
-      }
+    if(data.names) {
+      queryData.variableNames = (data.names || []).join(',');
+    }
 
-      return this.http.get(this.path +'/'+ pointer +'/form-variables', {
-        data: queryData,
-        done: done
-      });
-    },
+    return this.http.get(this.path +'/'+ pointer +'/form-variables', {
+      data: queryData,
+      done: done
+    });
+  },
 
 
   /**
@@ -3613,72 +3041,68 @@ var ProcessDefinition = AbstractClientResource.extend(
    *
    * @param  {Object.<String, *>} data
    * @param  {String}             [data.key]            start the process-definition with this key
-   * @param  {String}             [data.tenantId]       and the this tenant-id
    * @param  {String}             [data.id]             or: start the process-definition with this id
    * @param  {String}             [data.businessKey]    of the process to be set
    * @param  {Array}              [data.variables]      variables to be set
    * @param  {Function}           [done]
    */
-    submitForm: function(data, done) {
-      var pointer = '';
-      done = done || noop;
-      if (data.key) {
-        pointer = 'key/'+ data.key;
-        if (data.tenantId) {
-          pointer += '/tenant-id/' + data.tenantId;
-        }
-      }
-      else if (data.id) {
-        pointer = data.id;
-      }
-      else {
-        return done(new Error('Process definition task variables needs either a key or an id.'));
-      }
+  submitForm: function(data, done) {
+    var pointer = '';
+    done = done || noop;
+    if (data.key) {
+      pointer = 'key/'+ data.key;
+    }
+    else if (data.id) {
+      pointer = data.id;
+    }
+    else {
+      return done(new Error('Process definition task variables needs either a key or an id.'));
+    }
 
-      return this.http.post(this.path +'/'+ pointer +'/submit-form', {
-        data: {
-          businessKey : data.businessKey,
-          variables: data.variables
-        },
-        done: done
-      });
-    },
+    return this.http.post(this.path +'/'+ pointer +'/submit-form', {
+      data: {
+        businessKey : data.businessKey,
+        variables: data.variables
+      },
+      done: done
+    });
+  },
 
 
   /**
    * Retrieves the form of a process definition.
    * @param  {Function} [done]
    */
-    startForm: function(data, done) {
-      var path = this.path +'/'+ (data.key ? 'key/'+ data.key : data.id) +'/startForm';
-      return this.http.get(path, {
-        done: done || noop
-      });
-    },
+  startForm: function(data, done) {
+    var path = this.path +'/'+ (data.key ? 'key/'+ data.key : data.id) +'/startForm';
+    return this.http.get(path, {
+      done: done || noop
+    });
+  },
 
 
   /**
    * Retrieves the form of a process definition.
    * @param  {Function} [done]
    */
-    xml: function(data, done) {
-      var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/xml';
-      return this.http.get(path, {
-        done: done || noop
-      });
-    },
+  xml: function(data, done) {
+    var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/xml';
+    return this.http.get(path, {
+      done: done || noop
+    });
+  },
 
   /**
    * Retrieves runtime statistics of a given process definition grouped by activities
    * @param  {Function} [done]
    */
-    statistics: function(data, done) {
-      var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/statistics';
-      return this.http.get(path, {
-        data: data,
-        done: done || noop
-      });
-    },
+  statistics: function(data, done) {
+    var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/statistics';
+    return this.http.get(path, {
+      data: data,
+      done: done || noop
+    });
+  },
 
 
   /**
@@ -3687,21 +3111,21 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {Object} [data]
    * @param  {Function} [done]
    */
-    submit: function(data, done) {
-      var path = this.path;
-      if (data.key) {
-        path += '/key/'+ data.key;
-      }
-      else {
-        path += '/'+ data.id;
-      }
-      path += '/submit-form';
+  submit: function(data, done) {
+    var path = this.path;
+    if (data.key) {
+      path += '/key/'+ data.key;
+    }
+    else {
+      path += '/'+ data.id;
+    }
+    path += '/submit-form';
 
-      return this.http.post(path, {
-        data: data,
-        done: done
-      });
-    },
+    return this.http.post(path, {
+      data: data,
+      done: done
+    });
+  },
 
 
   /**
@@ -3711,21 +3135,21 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {Object.<String, *>} [params]
    * @param  {requestCallback}    [done]
    */
-    suspend: function(ids, params, done) {
+  suspend: function(ids, params, done) {
     // allows to pass only a callback
-      if (typeof params === 'function') {
-        done = params;
-        params = {};
-      }
-      params = params || {};
-      done = done || noop;
+    if (typeof params === 'function') {
+      done = params;
+      params = {};
+    }
+    params = params || {};
+    done = done || noop;
     // allows to pass a single ID
-      ids = Array.isArray(ids) ? ids : [ids];
+    ids = Array.isArray(ids) ? ids : [ids];
 
-      return this.http.post(this.path, {
-        done: done
-      });
-    },
+    return this.http.post(this.path, {
+      done: done
+    });
+  },
 
   /**
    * Instantiates a given process definition.
@@ -3738,34 +3162,40 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param {String} [params.businessKey]     The business key the process instance is to be initialized with. The business key uniquely identifies the process instance in the context of the given process definition.
    * @param {String} [params.caseInstanceId]  The case instance id the process instance is to be initialized with.
    */
-    start: function(params, done) {
-      var url = this.path + '/';
-
-      if (params.id) {
-        url = url + params.id;
-      } else {
-        url = url + 'key/' + params.key;
-
-        if (params.tenantId) {
-          url = url + '/tenant-id/' + params.tenantId;
-        }
-      }
-
-      return this.http.post(url + '/start', {
-        data: params,
-        done: done
-      });
-    }
-  });
+  start: function(params, done) {
+  	var url = this.path + '/';
+  	
+  	if (params.id) {
+  		url = url + params.id;
+  	} else {
+  		url = url + 'key/' + params.key;
+  		
+  		if (params.tenantId) {
+  			url = url + '/tenant-id/' + params.tenantId;
+  		}
+  	}
+  	
+    return this.http.post(url + '/start', {
+      data: params,
+      done: done
+    });
+  }
+});
 
 
 module.exports = ProcessDefinition;
 
 
-},{"./../abstract-client-resource":4,"q":48}],25:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":47}],25:[function(_dereq_,module,exports){
 'use strict';
 
-var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var AbstractClientResource = _dereq_("./../abstract-client-resource");
+
+/**
+ * No-Op callback
+ */
+function noop() {}
+
 
 /**
  * Process Instance Resource
@@ -3776,28 +3206,16 @@ var AbstractClientResource = _dereq_('./../abstract-client-resource');
  */
 var ProcessInstance = AbstractClientResource.extend(
 /** @lends  CamSDK.client.resource.ProcessInstance.prototype */
-  {
+{
 
-  },
+},
 
 /** @lends  CamSDK.client.resource.ProcessInstance */
-  {
+{
   /**
    * API path for the process instance resource
    */
-    path: 'process-instance',
-
-  /**
-   * Retrieve a single process instance
-   *
-   * @param  {uuid}     id    of the process instance to be requested
-   * @param  {Function} done
-   */
-    get: function(id, done) {
-      return this.http.get(this.path +'/'+ id, {
-        done: done
-      });
-    },
+  path: 'process-instance',
 
 
   /**
@@ -3809,31 +3227,31 @@ var ProcessInstance = AbstractClientResource.extend(
    * @param  {Object.<String, *>} [params.variables]
    * @param  {requestCallback} [done]
    */
-    create: function(params, done) {
-      return this.http.post(params, done);
-    },
+  create: function (params, done) {
+    return this.http.post(params, done);
+  },
 
-    list: function(params, done) {
-      var path = this.path;
+  list: function(params, done) {
+    var path = this.path;
 
     // those parameters have to be passed in the query and not body
-      path += '?firstResult='+ (params.firstResult || 0);
-      path += '&maxResults='+ (params.maxResults || 15);
+    path += '?firstResult='+ (params.firstResult || 0);
+    path += '&maxResults='+ (params.maxResults || 15);
 
-      return this.http.post(path, {
-        data: params,
-        done: done
-      });
-    },
+    return this.http.post(path, {
+      data: params,
+      done: done
+    });
+  },
 
-    count: function(params, done) {
-      var path = this.path + '/count';
+  count: function(params, done) {
+    var path = this.path + '/count';
 
-      return this.http.post(path, {
-        data: params,
-        done: done
-      });
-    },
+    return this.http.post(path, {
+      data: params,
+      done: done
+    });
+  },
 
   /**
    * Post process instance modifications
@@ -3855,89 +3273,22 @@ var ProcessInstance = AbstractClientResource.extend(
    *
    * @param  {requestCallback}  done
    */
-    modify: function(params, done) {
-      return this.http.post(this.path + '/' + params.id + '/modification', {
-        data: {
-          instructions:         params.instructions,
-          skipCustomListeners:  params.skipCustomListeners,
-          skipIoMappings:       params.skipIoMappings
-        },
-        done: done
-      });
-    },
-
-    /**
-     * Delete multiple process instances asynchronously (batch).
-     *
-     * @see https://docs.camunda.org/manual/7.6/develop/reference/rest/process-instance/post-delete/
-     *
-     * @param   {Object}            payload
-     * @param   {requestCallback}   done
-     *
-     */
-    deleteAsync: function(payload, done) {
-      return this.http.post(this.path + '/delete', {
-        data: payload,
-        done: done
-      });
-    }
-  });
+  modify: function (params, done) {
+    return this.http.post(this.path + '/' + params.id + '/modification', {
+      data: {
+        instructions:         params.instructions,
+        skipCustomListeners:  params.skipCustomListeners,
+        skipIoMappings:       params.skipIoMappings
+      },
+      done: done
+    });
+  }
+});
 
 
 module.exports = ProcessInstance;
 
 },{"./../abstract-client-resource":4}],26:[function(_dereq_,module,exports){
-'use strict';
-
-var AbstractClientResource = _dereq_('./../abstract-client-resource');
-
-/**
- * Task Resource
- * @class
- * @memberof CamSDK.client.resource
- * @augments CamSDK.client.AbstractClientResource
- */
-var TaskReport = AbstractClientResource.extend();
-
-/**
- * Path used by the resource to perform HTTP queries
- * @type {String}
- */
-TaskReport.path = 'task/report';
-
-
-/**
- * Fetch the count of tasks grouped by candidate group.
- *
- * @param {Function} done
- */
-TaskReport.countByCandidateGroup = function(done) {
-  return this.http.get(this.path + '/candidate-group-count', {
-    done: done
-  });
-};
-
-/**
- * Query for process instance durations report.
- * @param  {Object}   [params]
- * @param  {Object}   [params.reportType]           Must be 'duration'.
- * @param  {Object}   [params.periodUnit]           Can be one of `month` or `quarter`, defaults to `month`
- * @param  {Object}   [params.processDefinitionIn]  Comma separated list of process definition IDs
- * @param  {Object}   [params.startedAfter]         Date after which the process instance were started
- * @param  {Object}   [params.startedBefore]        Date before which the process instance were started
- * @param  {Function} done
- */
-TaskReport.countByCandidateGroupAsCsv = function(done) {
-  return this.http.get(this.path + '/candidate-group-count', {
-    accept: 'text/csv',
-    done: done
-  });
-};
-
-module.exports = TaskReport;
-
-
-},{"./../abstract-client-resource":4}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -4221,7 +3572,7 @@ Task.update = function(task, done) {
  */
 Task.assignee = function(taskId, userId, done) {
   var data = {
-    userId: userId
+      userId: userId
   };
 
   if (arguments.length === 2) {
@@ -4249,7 +3600,7 @@ Task.assignee = function(taskId, userId, done) {
  */
 Task.delegate = function(taskId, userId, done) {
   var data = {
-    userId: userId
+      userId: userId
   };
 
   if (arguments.length === 2) {
@@ -4279,7 +3630,7 @@ Task.delegate = function(taskId, userId, done) {
  */
 Task.claim = function(taskId, userId, done) {
   var data = {
-    userId: userId
+      userId: userId
   };
 
   if (arguments.length === 2) {
@@ -4344,30 +3695,10 @@ Task.submitForm = function(data, done) {
   });
 };
 
-/**
- * Complete a task and update process variables.
- *
- * @param  {object}             [params]
- * @param  {uuid}               [params.id]           Id of the task. This value is mandatory.
- * @param  {Object.<String, *>} [params.variables]    Process variables which need to be updated.
- * @param  {Function} done
- */
-Task.complete = function(params, done) {
-  done = done || noop;
 
-  if (!params.id) {
-    var err = new Error('Task complete needs a task id.');
-    done(err);
-    return Q.reject(err);
-  }
 
-  return this.http.post(this.path + '/' + params.id + '/complete', {
-    data: {
-      variables: params.variables
-    },
-    done: done
-  });
-};
+
+
 
 Task.formVariables = function(data, done) {
   done = done || noop;
@@ -4432,9 +3763,9 @@ Task.localVariable = function(params, done) {
  * @param  {Function} done
  */
 Task.localVariables = function(taskId, done) {
-  return this.http.get(this.path + '/' + taskId + '/localVariables', {
-    done: done
-  });
+    return this.http.get(this.path + '/' + taskId + '/localVariables', {
+        done: done
+    });
 };
 
 /**
@@ -4452,7 +3783,7 @@ Task.modifyVariables = function(data, done) {
 /**
  * Removes a local variable from a task.
  */
-Task.deleteVariable = function(data, done) {
+Task.deleteVariable = function (data, done) {
   return this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
     done: done
   });
@@ -4462,7 +3793,7 @@ Task.deleteVariable = function(data, done) {
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":4,"q":48}],28:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":47}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4494,7 +3825,7 @@ Tenant.path = 'tenant';
  * @param  {String}   tenant.name
  * @param  {Function} done
  */
-Tenant.create = function(options, done) {
+Tenant.create = function (options, done) {
   return this.http.post(this.path +'/create', {
     data: options,
     done: done || noop
@@ -4512,7 +3843,7 @@ Tenant.create = function(options, done) {
  * @param {String} [options.groupMember]  Only retrieve tenants where the given group id is a member of.
  * @param  {Function} done
  */
-Tenant.count = function(options, done) {
+Tenant.count = function (options, done) {
   if (arguments.length === 1) {
     done = options;
     options = {};
@@ -4534,7 +3865,7 @@ Tenant.count = function(options, done) {
  * @param  {String} [options.id]    The id of the tenant, can be a property (id) of an object
  * @param  {Function} done
  */
-Tenant.get = function(options, done) {
+Tenant.get = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
   return this.http.get(this.path + '/' + id, {
@@ -4567,7 +3898,7 @@ Tenant.get = function(options, done) {
  *
  * @param  {Function} done
  */
-Tenant.list = function(options, done) {
+Tenant.list = function (options, done) {
   if (arguments.length === 1) {
     done = options;
     options = {};
@@ -4589,7 +3920,7 @@ Tenant.list = function(options, done) {
  * @param {String} [options.userId]   The id of user to add to the tenant
  * @param  {Function} done
  */
-Tenant.createUserMember = function(options, done) {
+Tenant.createUserMember = function (options, done) {
   return this.http.put(this.path +'/' + options.id + '/user-members/' + options.userId, {
     data: options,
     done: done || noop
@@ -4603,7 +3934,7 @@ Tenant.createUserMember = function(options, done) {
  * @param {String} [options.groupId]   The id of group to add to the tenant
  * @param  {Function} done
  */
-Tenant.createGroupMember = function(options, done) {
+Tenant.createGroupMember = function (options, done) {
   return this.http.put(this.path +'/' + options.id + '/group-members/' + options.groupId, {
     data: options,
     done: done || noop
@@ -4617,7 +3948,7 @@ Tenant.createGroupMember = function(options, done) {
  * @param {String} [options.userId]   The id of user to add to the tenant
  * @param  {Function} done
  */
-Tenant.deleteUserMember = function(options, done) {
+Tenant.deleteUserMember = function (options, done) {
   return this.http.del(this.path +'/' + options.id + '/user-members/' + options.userId, {
     data: options,
     done: done || noop
@@ -4631,7 +3962,7 @@ Tenant.deleteUserMember = function(options, done) {
  * @param {String} [options.groupId]   The id of group to add to the tenant
  * @param  {Function} done
  */
-Tenant.deleteGroupMember = function(options, done) {
+Tenant.deleteGroupMember = function (options, done) {
   return this.http.del(this.path +'/' + options.id + '/group-members/' + options.groupId, {
     data: options,
     done: done || noop
@@ -4644,7 +3975,7 @@ Tenant.deleteGroupMember = function(options, done) {
  * @param  {Object}   tenant   is an object representation of a tenant
  * @param  {Function} done
  */
-Tenant.update = function(options, done) {
+Tenant.update = function (options, done) {
   return this.http.put(this.path +'/' + options.id, {
     data: options,
     done: done || noop
@@ -4658,7 +3989,7 @@ Tenant.update = function(options, done) {
  * @param  {Object}   tenant   is an object representation of a tenant
  * @param  {Function} done
  */
-Tenant.delete = function(options, done) {
+Tenant.delete = function (options, done) {
   return this.http.del(this.path +'/' + options.id, {
     data: options,
     done: done || noop
@@ -4670,12 +4001,12 @@ Tenant.options = function(options, done) {
 
   if (arguments.length === 1) {
     done = options;
-    id = '';
+    id = "";
 
   } else {
     id = typeof options === 'string' ? options : options.id;
     if( id === undefined ) {
-      id = '';
+      id = "";
     }
   }
 
@@ -4688,7 +4019,7 @@ Tenant.options = function(options, done) {
 };
 module.exports = Tenant;
 
-},{"./../abstract-client-resource":4}],29:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],28:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -4752,7 +4083,7 @@ User.options = function(options, done) {
  * @param  {String}   [options.email]
  * @param  {Function} done
  */
-User.create = function(options, done) {
+User.create = function (options, done) {
   options = options || {};
   done = done || noop;
 
@@ -4810,7 +4141,7 @@ User.create = function(options, done) {
  * @param {String} [options.maxResults]    Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
  * @param  {Function} done
  */
-User.list = function(options, done) {
+User.list = function (options, done) {
   if (arguments.length === 1) {
     done = options;
     options = {};
@@ -4838,7 +4169,7 @@ User.list = function(options, done) {
  * @param {String} [options.memberOfGroup] users which are members of a group.
  * @param  {Function} done
  */
-User.count = function(options, done) {
+User.count = function (options, done) {
   if (arguments.length === 1) {
     done = options;
     options = {};
@@ -4860,7 +4191,7 @@ User.count = function(options, done) {
  * @param  {uuid}         options.id
  * @param  {Function} done
  */
-User.profile = function(options, done) {
+User.profile = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
   return this.http.get(this.path + '/' + utils.escapeUrl(id) + '/profile', {
@@ -4878,7 +4209,7 @@ User.profile = function(options, done) {
  * @param  {String}   [options.email]
  * @param  {Function} done
  */
-User.updateProfile = function(options, done) {
+User.updateProfile = function (options, done) {
   options = options || {};
   done = done || noop;
 
@@ -4904,7 +4235,7 @@ User.updateProfile = function(options, done) {
  * @param {String} [options.authenticatedUserPassword]  The password of the authenticated user who changes the password of the user (ie. the user with passed id as path parameter).
  * @param  {Function} done
  */
-User.updateCredentials = function(options, done) {
+User.updateCredentials = function (options, done) {
   options = options || {};
   done = done || noop;
   var err;
@@ -4942,7 +4273,7 @@ User.updateCredentials = function(options, done) {
  * @param  {uuid} options.id
  * @param  {Function} done
  */
-User.delete = function(options, done) {
+User.delete = function (options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
   return this.http.del(this.path + '/' + utils.escapeUrl(id), {
@@ -4952,7 +4283,7 @@ User.delete = function(options, done) {
 
 module.exports = User;
 
-},{"../../utils":42,"./../abstract-client-resource":4,"q":48}],30:[function(_dereq_,module,exports){
+},{"../../utils":41,"./../abstract-client-resource":4,"q":47}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -5082,7 +4413,7 @@ Variable.path = 'variable-instance';
  *
  * @param  {RequestCallback}  done
  */
-Variable.instances = function(data, done) {
+Variable.instances = function (data, done) {
   return this.http.post(this.path, {
     data: data,
     done: done
@@ -5092,7 +4423,7 @@ Variable.instances = function(data, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":4}],31:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],30:[function(_dereq_,module,exports){
 'use strict';
 
 var Events = _dereq_('./events');
@@ -5142,7 +4473,7 @@ BaseClass.extend = function(protoProps, staticProps) {
     child = protoProps.constructor;
   }
   else {
-    child = function() { return parent.apply(this, arguments); };
+    child = function(){ return parent.apply(this, arguments); };
   }
 
   for (s in parent) {
@@ -5152,7 +4483,7 @@ BaseClass.extend = function(protoProps, staticProps) {
     child[s] = staticProps[s];
   }
 
-  Surrogate = function() { this.constructor = child; };
+  Surrogate = function(){ this.constructor = child; };
   Surrogate.prototype = parent.prototype;
   child.prototype = new Surrogate();
 
@@ -5179,7 +4510,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":32}],32:[function(_dereq_,module,exports){
+},{"./events":31}],31:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -5300,7 +4631,7 @@ Events.off = function(eventName, callback) {
     return this;
   }
 
-  var e, arr = [];
+  var e, ev, arr = [];
   for (e in this._events[eventName]) {
     if (this._events[eventName][e] !== callback) {
       arr.push(this._events[eventName][e]);
@@ -5322,7 +4653,7 @@ Events.trigger = function() {
   var eventName = args.shift();
   ensureEvents(this, eventName);
 
-  var e;
+  var e, ev;
   for (e in this._events[eventName]) {
     this._events[eventName][e](this, args);
   }
@@ -5333,7 +4664,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],33:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 'use strict';
 /* global CamSDK, require, localStorage: false */
 
@@ -5380,7 +4711,7 @@ function CamundaForm(options) {
     throw new Error('CamundaForm need to be initialized with options.');
   }
 
-  var done = options.done = options.done || function(err) { if(err) throw err; };
+  var done = options.done = options.done || function (err) { if(err) throw err; };
 
   if (options.client) {
     this.client = options.client;
@@ -5394,8 +4725,8 @@ function CamundaForm(options) {
   }
 
   this.taskId = options.taskId;
-  if(this.taskId) {
-    this.taskBasePath = this.client.baseUrl + '/task/' + this.taskId;
+  if(!!this.taskId) {
+    this.taskBasePath = this.client.baseUrl + "/task/" + this.taskId;
   }
   this.processDefinitionId = options.processDefinitionId;
   this.processDefinitionKey = options.processDefinitionKey;
@@ -5462,7 +4793,7 @@ CamundaForm.prototype.initializeHandler = function(FieldHandler) {
  * @memberof CamSDK.form.CamundaForm.prototype
  */
 CamundaForm.prototype.initialize = function(done) {
-  done = done || function(err) { if(err) throw err; };
+  done = done || function (err) { if(err) throw err; };
   var self = this;
 
   // check whether form needs to be loaded first
@@ -5594,7 +4925,6 @@ CamundaForm.prototype.executeFormScripts = function() {
 };
 
 CamundaForm.prototype.executeFormScript = function(script) {
-  /*eslint-disable */
   /* jshint unused: false */
   (function(camForm) {
 
@@ -5603,7 +4933,6 @@ CamundaForm.prototype.executeFormScript = function(script) {
     /* jshint evil: false */
 
   })(this);
-  /*eslint-enable */
 };
 
 
@@ -5630,7 +4959,7 @@ CamundaForm.prototype.store = function(callback) {
 
   this.storePrevented = false;
   this.fireEvent('store');
-  if(this.storePrevented) {
+  if(!!this.storePrevented) {
     return;
   }
 
@@ -5771,10 +5100,8 @@ CamundaForm.prototype.submit = function(callback) {
   // fire submit event (event handler may prevent submit from being performed)
   this.submitPrevented = false;
   this.fireEvent('submit');
-  if (this.submitPrevented) {
-    var err = new Error('camForm submission prevented');
-    this.fireEvent('submit-failed', err);
-    return callback && callback(err);
+  if (!!this.submitPrevented) {
+    return;
   }
 
   try {
@@ -5786,15 +5113,15 @@ CamundaForm.prototype.submit = function(callback) {
 
   var self = this;
   this.transformFiles(function() {
+    // clear the local storage for this form
+    localStorage.removeItem('camForm:'+ formId);
+
     // submit the form variables
     self.submitVariables(function(err, result) {
       if(err) {
         self.fireEvent('submit-failed', err);
         return callback && callback(err);
       }
-
-      // clear the local storage for this form
-      localStorage.removeItem('camForm:'+ formId);
 
       self.fireEvent('submit-success');
       return callback && callback(null, result);
@@ -5814,11 +5141,11 @@ CamundaForm.prototype.transformFiles = function(callback) {
   };
 
   var bytesToSize = function(bytes) {
-    if(bytes === 0) return '0 Byte';
-    var k = 1000;
-    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-    var i = Math.floor(Math.log(bytes) / Math.log(k));
-    return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+     if(bytes === 0) return '0 Byte';
+     var k = 1000;
+     var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+     var i = Math.floor(Math.log(bytes) / Math.log(k));
+     return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
   };
 
   for (var i in this.fields) {
@@ -5836,7 +5163,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
             var bytes = new Uint8Array( e.target.result );
             var len = bytes.byteLength;
             for (var j = 0; j < len; j++) {
-              binary += String.fromCharCode( bytes[ j ] );
+                binary += String.fromCharCode( bytes[ j ] );
             }
             var fileVar = that.variableManager.variables[that.fields[i].variableName];
             fileVar.value = btoa(binary);
@@ -5869,7 +5196,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
  * @memberof CamSDK.form.CamundaForm.prototype
  */
 CamundaForm.prototype.fetchVariables = function(done) {
-  done = done || function() {};
+  done = done || function(){};
   var names = this.variableManager.variableNames();
   if (names.length) {
 
@@ -5975,8 +5302,8 @@ CamundaForm.prototype.mergeVariables = function(variables) {
 
     // generate content url for file and bytes variables
     var type = vars[v].type;
-    if(!!this.taskBasePath && (type === 'Bytes' || type === 'File')) {
-      vars[v].contentUrl = this.taskBasePath + '/variables/'+ vars[v].name + '/data';
+    if(!!this.taskBasePath && (type === "Bytes" || type === "File")) {
+      vars[v].contentUrl = this.taskBasePath + '/variables/'+ vars[v].name + "/data";
     }
 
     this.variableManager.isVariablesFetched = true;
@@ -6052,7 +5379,7 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":31,"./../events":32,"./constants":34,"./controls/choices-field-handler":36,"./controls/file-download-handler":37,"./controls/input-field-handler":38,"./dom-lib":39,"./variable-manager":41}],34:[function(_dereq_,module,exports){
+},{"./../base-class":30,"./../events":31,"./constants":33,"./controls/choices-field-handler":35,"./controls/file-download-handler":36,"./controls/input-field-handler":37,"./dom-lib":38,"./variable-manager":40}],33:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -6064,7 +5391,7 @@ module.exports = {
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],35:[function(_dereq_,module,exports){
+},{}],34:[function(_dereq_,module,exports){
 'use strict';
 
 var BaseClass = _dereq_('../../base-class');
@@ -6137,7 +5464,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":31,"./../dom-lib":39}],36:[function(_dereq_,module,exports){
+},{"../../base-class":30,"./../dom-lib":38}],35:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6153,130 +5480,131 @@ var constants = _dereq_('./../constants'),
  */
 var ChoicesFieldHandler = AbstractFormField.extend(
 /** @lends CamSDK.form.ChoicesFieldHandler.prototype */
-  {
+{
   /**
    * Prepares an instance
    */
-    initialize: function() {
+  initialize: function() {
     // read variable definitions from markup
-      var variableName = this.variableName = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
-      var variableType = this.variableType = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE);
-      var choicesVariableName = this.choicesVariableName = this.element.attr(constants.DIRECTIVE_CAM_CHOICES);
+    var variableName = this.variableName = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
+    var variableType = this.variableType = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE);
+    var choicesVariableName = this.choicesVariableName = this.element.attr(constants.DIRECTIVE_CAM_CHOICES);
 
     // crate variable
-      this.variableManager.createVariable({
-        name: variableName,
-        type: variableType,
-        value: this.element.val() || null
-      });
+    this.variableManager.createVariable({
+      name: variableName,
+      type: variableType,
+      value: this.element.val() || null
+    });
 
     // fetch choices variable
-      if(choicesVariableName) {
-        this.variableManager.fetchVariable(choicesVariableName);
-      }
+    if(!!choicesVariableName) {
+      this.variableManager.fetchVariable(choicesVariableName);
+    }
 
     // remember the original value found in the element for later checks
-      this.originalValue = this.element.val() || null;
+    this.originalValue = this.element.val() || null;
 
-      this.previousValue = this.originalValue;
+    this.previousValue = this.originalValue;
 
     // remember variable name
-      this.variableName = variableName;
-    },
+    this.variableName = variableName;
+  },
 
   /**
    * Applies the stored value to a field element.
    *
    * @return {CamSDK.form.ChoicesFieldHandler} Chainable method.
    */
-    applyValue: function() {
+  applyValue: function() {
 
-      var selectedIndex = this.element[0].selectedIndex;
+    var selectedIndex = this.element[0].selectedIndex;
     // if cam-choices variable is defined, apply options
-      if(this.choicesVariableName) {
-        var choicesVariableValue = this.variableManager.variableValue(this.choicesVariableName);
-        if(choicesVariableValue) {
+    if(!!this.choicesVariableName) {
+      var choicesVariableValue = this.variableManager.variableValue(this.choicesVariableName);
+      if(!!choicesVariableValue) {
         // array
-          if (choicesVariableValue instanceof Array) {
-            for(var i = 0; i < choicesVariableValue.length; i++) {
-              var val = choicesVariableValue[i];
-              if(!this.element.find('option[text="'+val+'"]').length) {
-                this.element.append($('<option>', {
-                  value: val,
-                  text: val
-                }));
-              }
+        if (choicesVariableValue instanceof Array) {
+          for(var i = 0; i < choicesVariableValue.length; i++) {
+            var val = choicesVariableValue[i];
+            if(!this.element.find('option[text="'+val+'"]').length) {
+              this.element.append($('<option>', {
+                value: val,
+                text: val
+              }));
             }
+          }
         // object aka map
-          } else {
-            for (var p in choicesVariableValue) {
-              if(!this.element.find('option[value="'+p+'"]').length) {
-                this.element.append($('<option>', {
-                  value: p,
-                  text: choicesVariableValue[p]
-                }));
-              }
+        } else {
+          for (var p in choicesVariableValue) {
+            if(!this.element.find('option[value="'+p+'"]').length) {
+              this.element.append($('<option>', {
+                value: p,
+                text: choicesVariableValue[p]
+              }));
             }
           }
         }
       }
+    }
 
     // make sure selected index is retained
-      this.element[0].selectedIndex = selectedIndex;
+    this.element[0].selectedIndex = selectedIndex;
 
     // select option referenced in cam-variable-name (if any)
-      this.previousValue = this.element.val() || '';
-      var variableValue = this.variableManager.variableValue(this.variableName);
-      if (variableValue !== this.previousValue) {
+    this.previousValue = this.element.val() || '';
+    var variableValue = this.variableManager.variableValue(this.variableName);
+    if (variableValue !== this.previousValue) {
       // write value to html control
-        this.element.val(variableValue);
-        this.element.trigger('camFormVariableApplied', variableValue);
-      }
+      this.element.val(variableValue);
+      this.element.trigger('camFormVariableApplied', variableValue);
+    }
 
-      return this;
-    },
+    return this;
+  },
 
   /**
    * Retrieves the value from a field element and stores it
    *
    * @return {*} when multiple choices are possible an array of values, otherwise a single value
    */
-    getValue: function() {
+  getValue: function() {
     // read value from html control
-      var value;
-      var multiple = this.element.prop('multiple');
+    var value;
+    var multiple = this.element.prop('multiple');
 
-      if (multiple) {
-        value = [];
-        this.element.find('option:selected').each(function() {
-          value.push($(this).val());
-        });
-      }
-      else {
-        value = this.element.find('option:selected').attr('value');//.val();
-      }
-
-    // write value to variable
-      this.variableManager.variableValue(this.variableName, value);
-
-      return value;
+    if (multiple) {
+      value = [];
+      this.element.find('option:selected').each(function() {
+        value.push($(this).val());
+      });
+    }
+    else {
+      value = this.element.find('option:selected').attr('value');//.val();
     }
 
-  },
-/** @lends CamSDK.form.ChoicesFieldHandler */
-  {
-    selector: 'select['+ constants.DIRECTIVE_CAM_VARIABLE_NAME +']'
+    // write value to variable
+    this.variableManager.variableValue(this.variableName, value);
 
-  });
+    return value;
+  }
+
+},
+/** @lends CamSDK.form.ChoicesFieldHandler */
+{
+  selector: 'select['+ constants.DIRECTIVE_CAM_VARIABLE_NAME +']'
+
+});
 
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":34,"./../dom-lib":39,"./abstract-form-field":35}],37:[function(_dereq_,module,exports){
+},{"./../constants":33,"./../dom-lib":38,"./abstract-form-field":34}],36:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
-    AbstractFormField = _dereq_('./abstract-form-field');
+    AbstractFormField = _dereq_('./abstract-form-field'),
+    $ = _dereq_('./../dom-lib');
 
 /**
  * A field control handler for file downloads
@@ -6285,52 +5613,53 @@ var constants = _dereq_('./../constants'),
  * @augments {CamSDK.form.AbstractFormField}
  */
 var InputFieldHandler = AbstractFormField.extend(
-  {
+{
   /**
    * Prepares an instance
    */
-    initialize: function() {
+  initialize: function() {
 
-      this.variableName = this.element.attr(constants.DIRECTIVE_CAM_FILE_DOWNLOAD);
+    this.variableName = this.element.attr(constants.DIRECTIVE_CAM_FILE_DOWNLOAD);
 
     // fetch the variable
-      this.variableManager.fetchVariable(this.variableName);
-    },
-
-    applyValue: function() {
-
-      var variable = this.variableManager.variable(this.variableName);
-
-    // set the download url of the link
-      this.element.attr('href', variable.contentUrl);
-
-    // sets the text content of the link to the filename it the textcontent is empty
-      if(this.element.text().trim().length === 0) {
-        this.element.text(variable.valueInfo.filename);
-      }
-
-      return this;
-    }
-
+    this.variableManager.fetchVariable(this.variableName);
   },
 
-  {
+  applyValue: function() {
 
-    selector: 'a['+ constants.DIRECTIVE_CAM_FILE_DOWNLOAD +']'
+    var variable = this.variableManager.variable(this.variableName);
 
-  });
+    // set the download url of the link
+    this.element.attr("href", variable.contentUrl);
+
+    // sets the text content of the link to the filename it the textcontent is empty    
+    if(this.element.text().trim().length === 0) {
+      this.element.text(variable.valueInfo.filename);
+    }
+
+    return this;
+  }
+
+},
+
+{
+
+  selector: 'a['+ constants.DIRECTIVE_CAM_FILE_DOWNLOAD +']'
+
+});
 
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":34,"./abstract-form-field":35}],38:[function(_dereq_,module,exports){
+},{"./../constants":33,"./../dom-lib":38,"./abstract-form-field":34}],37:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
-    AbstractFormField = _dereq_('./abstract-form-field');
+    AbstractFormField = _dereq_('./abstract-form-field'),
+    $ = _dereq_('./../dom-lib');
 
 var isBooleanCheckbox = function(element) {
-  return element.attr('type') === 'checkbox' && element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE) === 'Boolean';
+  return element.attr('type') === "checkbox" && element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE) === "Boolean";
 };
 
 /**
@@ -6341,48 +5670,48 @@ var isBooleanCheckbox = function(element) {
  */
 var InputFieldHandler = AbstractFormField.extend(
 /** @lends CamSDK.form.InputFieldHandler.prototype */
-  {
+{
   /**
    * Prepares an instance
    */
-    initialize: function() {
+  initialize: function() {
     // read variable definitions from markup
-      var variableName = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
-      var variableType = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE);
+    var variableName = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_NAME);
+    var variableType = this.element.attr(constants.DIRECTIVE_CAM_VARIABLE_TYPE);
 
     // crate variable
-      this.variableManager.createVariable({
-        name: variableName,
-        type: variableType
-      });
+    this.variableManager.createVariable({
+      name: variableName,
+      type: variableType
+    });
 
     // remember the original value found in the element for later checks
-      this.originalValue = this.element.val();
+    this.originalValue = this.element.val();
 
-      this.previousValue = this.originalValue;
+    this.previousValue = this.originalValue;
 
     // remember variable name
-      this.variableName = variableName;
+    this.variableName = variableName;
 
-      this.getValue();
-    },
+    this.getValue();
+  },
 
   /**
    * Applies the stored value to a field element.
    *
    * @return {CamSDK.form.InputFieldHandler} Chainable method
    */
-    applyValue: function() {
-      this.previousValue = this.getValueFromHtmlControl() || '';
-      var variableValue = this.variableManager.variableValue(this.variableName);
-      if (variableValue !== this.previousValue) {
+  applyValue: function() {
+    this.previousValue = this.getValueFromHtmlControl() || '';
+    var variableValue = this.variableManager.variableValue(this.variableName);
+    if (variableValue !== this.previousValue) {
       // write value to html control
-        this.applyValueToHtmlControl(variableValue);
-        this.element.trigger('camFormVariableApplied', variableValue);
-      }
+      this.applyValueToHtmlControl(variableValue);
+      this.element.trigger('camFormVariableApplied', variableValue);
+    }
 
-      return this;
-    },
+    return this;
+  },
 
   /**
    * Retrieves the value from an <input>
@@ -6390,45 +5719,45 @@ var InputFieldHandler = AbstractFormField.extend(
    *
    * @return {*}
    */
-    getValue: function() {
-      var value = this.getValueFromHtmlControl();
+  getValue: function() {
+    var value = this.getValueFromHtmlControl();
 
     // write value to variable
-      this.variableManager.variableValue(this.variableName, value);
+    this.variableManager.variableValue(this.variableName, value);
 
-      return value;
-    },
+    return value;
+  },
 
-    getValueFromHtmlControl: function() {
-      if(isBooleanCheckbox(this.element)) {
-        return this.element.prop('checked');
-      } else {
-        return this.element.val();
-      }
-    },
+  getValueFromHtmlControl: function() {
+    if(isBooleanCheckbox(this.element)) {
+      return this.element.prop("checked");
+    } else {
+      return this.element.val();
+    }
+  },
 
-    applyValueToHtmlControl: function(variableValue) {
-      if(isBooleanCheckbox(this.element)) {
-        this.element.prop('checked', variableValue);
-      } else if(this.element[0].type !== 'file') {
-        this.element.val(variableValue);
-      }
-
+  applyValueToHtmlControl: function(variableValue) {
+    if(isBooleanCheckbox(this.element)) {
+      this.element.prop("checked", variableValue);
+    } else if(this.element[0].type !== 'file') {
+      this.element.val(variableValue);
     }
 
-  },
-/** @lends CamSDK.form.InputFieldHandler */
-  {
+  }
 
-    selector: 'input['+ constants.DIRECTIVE_CAM_VARIABLE_NAME +']'+
+},
+/** @lends CamSDK.form.InputFieldHandler */
+{
+
+  selector: 'input['+ constants.DIRECTIVE_CAM_VARIABLE_NAME +']'+
            ',textarea['+ constants.DIRECTIVE_CAM_VARIABLE_NAME +']'
 
-  });
+});
 
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":34,"./abstract-form-field":35}],39:[function(_dereq_,module,exports){
+},{"./../constants":33,"./../dom-lib":38,"./abstract-form-field":34}],38:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -6443,7 +5772,7 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],40:[function(_dereq_,module,exports){
+},{}],39:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -6456,17 +5785,17 @@ var DATE_PATTERN = /^(\d{2}|\d{4})(?:\-)([0]{1}\d{1}|[1]{1}[0-2]{1})(?:\-)([0-2]
 
 var isType = function(value, type) {
   switch(type) {
-  case 'Integer':
-  case 'Long':
-  case 'Short':
-    return INTEGER_PATTERN.test(value);
-  case 'Float':
-  case 'Double':
-    return FLOAT_PATTERN.test(value);
-  case 'Boolean':
-    return BOOLEAN_PATTERN.test(value);
-  case 'Date':
-    return DATE_PATTERN.test(dateToString(value));
+    case 'Integer':
+    case 'Long':
+    case 'Short':
+      return INTEGER_PATTERN.test(value);
+    case 'Float':
+    case 'Double':
+      return FLOAT_PATTERN.test(value);
+    case 'Boolean':
+      return BOOLEAN_PATTERN.test(value);
+    case 'Date':
+      return DATE_PATTERN.test(dateToString(value));
   }
 };
 
@@ -6476,24 +5805,24 @@ var convertToType = function(value, type) {
     value = value.trim();
   }
 
-  if(type === 'String' || type === 'Bytes' || type === 'File') {
+  if(type === "String" || type === "Bytes" || type === "File") {
     return value;
   } else if (isType(value, type)) {
     switch(type) {
-    case 'Integer':
-    case 'Long':
-    case 'Short':
-      return parseInt(value, 10);
-    case 'Float':
-    case 'Double':
-      return parseFloat(value);
-    case 'Boolean':
-      return 'true' === value;
-    case 'Date':
-      return dateToString(value);
+      case 'Integer':
+      case 'Long':
+      case 'Short':
+        return parseInt(value, 10);
+      case 'Float':
+      case 'Double':
+        return parseFloat(value);
+      case 'Boolean':
+        return "true" === value;
+      case 'Date':
+        return dateToString(value);
     }
   } else {
-    throw new Error('Value \''+value+'\' is not of type '+type);
+    throw new Error("Value '"+value+"' is not of type "+type);
   }
 };
 
@@ -6531,7 +5860,7 @@ module.exports = {
   dateToString : dateToString
 };
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 'use strict';
 
 var convertToType = _dereq_('./type-util').convertToType;
@@ -6576,7 +5905,7 @@ VariableManager.prototype.createVariable = function(variable) {
 };
 
 VariableManager.prototype.destroyVariable = function(variableName) {
-  if(this.variables[variableName]) {
+  if(!!this.variables[variableName]) {
     delete this.variables[variableName];
   } else {
     throw new Error('Cannot remove variable with name '+variableName+': variable does not exist.');
@@ -6584,7 +5913,7 @@ VariableManager.prototype.destroyVariable = function(variableName) {
 };
 
 VariableManager.prototype.setOriginalValue = function(variableName, value) {
-  if(this.variables[variableName]) {
+  if(!!this.variables[variableName]) {
     this.variables[variableName].originalValue = value;
   } else {
     throw new Error('Cannot set original value of variable with name '+variableName+': variable does not exist.');
@@ -6607,7 +5936,7 @@ VariableManager.prototype.variableValue = function(variableName, value) {
     // convert empty string to null for all types except String
     value = null;
 
-  } else if(typeof value === 'string' && variable.type !== 'String') {
+  } else if(typeof value === "string" && variable.type !== "String") {
     // convert string value into model value
     value = convertToType(value, variable.type);
 
@@ -6625,7 +5954,7 @@ VariableManager.prototype.isDirty = function(name) {
   if(this.isJsonVariable(name)) {
     return variable.originalValue !== JSON.stringify(variable.value);
   } else {
-    return variable.originalValue !== variable.value || variable.type === 'Object';
+    return variable.originalValue !== variable.value || variable.type === "Object";
   }
 };
 
@@ -6651,14 +5980,14 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":40}],42:[function(_dereq_,module,exports){
+},{"./type-util":39}],41:[function(_dereq_,module,exports){
 'use strict';
 
 
 /**
  * @exports CamSDK.utils
  */
-var utils = module.exports = {'typeUtils' : _dereq_('./forms/type-util')};
+var utils = module.exports = {"typeUtils" : _dereq_('./forms/type-util')};
 
 utils.solveHALEmbedded = function(results) {
 
@@ -6713,16 +6042,16 @@ utils.solveHALEmbedded = function(results) {
 // https://github.com/caolan/async/blob/master/lib/async.js
 
 function _eachSeries(arr, iterator, callback) {
-  callback = callback || function() {};
+  callback = callback || function () {};
   if (!arr.length) {
     return callback();
   }
   var completed = 0;
-  var iterate = function() {
-    iterator(arr[completed], function(err) {
+  var iterate = function () {
+    iterator(arr[completed], function (err) {
       if (err) {
         callback(err);
-        callback = function() {};
+        callback = function () {};
       }
       else {
         completed += 1;
@@ -6759,11 +6088,11 @@ function _eachSeries(arr, iterator, callback) {
  * });
  */
 utils.series = function(tasks, callback) {
-  callback = callback || function() {};
+  callback = callback || function () {};
 
   var results = {};
-  _eachSeries(Object.keys(tasks), function(k, callback) {
-    tasks[k](function(err) {
+  _eachSeries(Object.keys(tasks), function (k, callback) {
+    tasks[k](function (err) {
       var args = Array.prototype.slice.call(arguments, 1);
       if (args.length <= 1) {
         args = args[0];
@@ -6771,7 +6100,7 @@ utils.series = function(tasks, callback) {
       results[k] = args;
       callback(err);
     });
-  }, function(err) {
+  }, function (err) {
     callback(err, results);
   });
 };
@@ -6790,7 +6119,7 @@ utils.escapeUrl = function(string) {
     .replace(/%5C/g, '%255C');
 };
 
-},{"./forms/type-util":40}],43:[function(_dereq_,module,exports){
+},{"./forms/type-util":39}],42:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -7844,7 +7173,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":44,"ieee754":45,"is-array":46}],44:[function(_dereq_,module,exports){
+},{"base64-js":43,"ieee754":44,"is-array":45}],43:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -7966,7 +7295,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],45:[function(_dereq_,module,exports){
+},{}],44:[function(_dereq_,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -8052,7 +7381,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],46:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
 
 /**
  * isArray
@@ -8087,7 +7416,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],47:[function(_dereq_,module,exports){
+},{}],46:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -8152,7 +7481,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],48:[function(_dereq_,module,exports){
+},{}],47:[function(_dereq_,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -10204,7 +9533,7 @@ return Q;
 });
 
 }).call(this,_dereq_("FWaASH"))
-},{"FWaASH":47}],49:[function(_dereq_,module,exports){
+},{"FWaASH":46}],48:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -11363,7 +10692,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":50,"reduce":51}],50:[function(_dereq_,module,exports){
+},{"emitter":49,"reduce":50}],49:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -11529,7 +10858,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],51:[function(_dereq_,module,exports){
+},{}],50:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
