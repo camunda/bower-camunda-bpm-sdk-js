@@ -268,24 +268,7 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":30,"./../events":31,"q":49}],2:[function(_dereq_,module,exports){
-exports.createSimpleGetQueryFunction = function(urlSuffix) {
-  return function(params, done) {
-    var url = this.path + urlSuffix;
-
-    if (typeof params === 'function') {
-      done = params;
-      params = {};
-    }
-
-    return this.http.get(url, {
-      data: params,
-      done: done
-    });
-  };
-};
-
-},{}],3:[function(_dereq_,module,exports){
+},{"./../base-class":29,"./../events":30,"q":48}],2:[function(_dereq_,module,exports){
 (function (Buffer){
 'use strict';
 
@@ -487,7 +470,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"./../events":31,"./../utils":43,"buffer":44,"q":49,"superagent":50}],4:[function(_dereq_,module,exports){
+},{"./../events":30,"./../utils":42,"buffer":43,"q":48,"superagent":49}],3:[function(_dereq_,module,exports){
 'use strict';
 var Events = _dereq_('./../events');
 
@@ -668,7 +651,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":31,"./http-client":3,"./resources/authorization":5,"./resources/batch":6,"./resources/case-definition":7,"./resources/case-execution":8,"./resources/case-instance":9,"./resources/decision-definition":10,"./resources/deployment":11,"./resources/drd":12,"./resources/execution":13,"./resources/external-task":14,"./resources/filter":15,"./resources/group":16,"./resources/history":17,"./resources/incident":18,"./resources/job":20,"./resources/job-definition":19,"./resources/metrics":21,"./resources/migration":22,"./resources/process-definition":23,"./resources/process-instance":24,"./resources/task":26,"./resources/task-report":25,"./resources/tenant":27,"./resources/user":28,"./resources/variable":29}],5:[function(_dereq_,module,exports){
+},{"./../events":30,"./http-client":2,"./resources/authorization":4,"./resources/batch":5,"./resources/case-definition":6,"./resources/case-execution":7,"./resources/case-instance":8,"./resources/decision-definition":9,"./resources/deployment":10,"./resources/drd":11,"./resources/execution":12,"./resources/external-task":13,"./resources/filter":14,"./resources/group":15,"./resources/history":16,"./resources/incident":17,"./resources/job":19,"./resources/job-definition":18,"./resources/metrics":20,"./resources/migration":21,"./resources/process-definition":22,"./resources/process-instance":23,"./resources/task":25,"./resources/task-report":24,"./resources/tenant":26,"./resources/user":27,"./resources/variable":28}],4:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -806,7 +789,7 @@ Authorization.check = function(authorization, done) {
 module.exports = Authorization;
 
 
-},{"./../abstract-client-resource":1}],6:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],5:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -873,7 +856,7 @@ Batch.delete = function(params, done) {
 
 module.exports = Batch;
 
-},{"./../abstract-client-resource":1}],7:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],6:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -974,7 +957,7 @@ CaseDefinition.xml = function(data, done) {
 
 module.exports = CaseDefinition;
 
-},{"./../abstract-client-resource":1}],8:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],7:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1059,7 +1042,7 @@ CaseExecution.modifyVariables = function(data, done) {
 
 module.exports = CaseExecution;
 
-},{"./../abstract-client-resource":1}],9:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],8:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1101,7 +1084,7 @@ CaseInstance.terminate = function(instanceId, params, done) {
 
 module.exports = CaseInstance;
 
-},{"./../abstract-client-resource":1}],10:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],9:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1200,7 +1183,7 @@ DecisionDefinition.evaluate = function(params, done) {
 
 module.exports = DecisionDefinition;
 
-},{"./../abstract-client-resource":1}],11:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],10:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1391,7 +1374,7 @@ Deployment.redeploy = function(options, done) {
 
 module.exports = Deployment;
 
-},{"./../abstract-client-resource":1}],12:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],11:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('../abstract-client-resource');
@@ -1579,7 +1562,7 @@ DRD.getXMLByKey = function(key, tenantId, done) {
 
 module.exports = DRD;
 
-},{"../../utils":43,"../abstract-client-resource":1}],13:[function(_dereq_,module,exports){
+},{"../../utils":42,"../abstract-client-resource":1}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1625,7 +1608,7 @@ Execution.modifyVariables = function(data, done) {
 module.exports = Execution;
 
 
-},{"./../abstract-client-resource":1}],14:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1821,7 +1804,7 @@ ExternalTask.retries = function(params, done) {
 
 module.exports = ExternalTask;
 
-},{"./../abstract-client-resource":1}],15:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],14:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1994,7 +1977,7 @@ Filter.authorizations = function(id, done) {
 module.exports = Filter;
 
 
-},{"./../abstract-client-resource":1}],16:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],15:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2205,11 +2188,10 @@ Group.delete = function(options, done) {
 
 module.exports = Group;
 
-},{"../../utils":43,"./../abstract-client-resource":1}],17:[function(_dereq_,module,exports){
+},{"../../utils":42,"./../abstract-client-resource":1}],16:[function(_dereq_,module,exports){
 'use strict';
 
-var AbstractClientResource = _dereq_('../abstract-client-resource');
-var helpers = _dereq_('../helpers');
+var AbstractClientResource = _dereq_('./../abstract-client-resource');
 
 
 
@@ -3032,12 +3014,9 @@ History.drdStatistics = function(id, params, done) {
   });
 };
 
-History.externalTaskLogList = helpers.createSimpleGetQueryFunction('/external-task-log');
-History.externalTaskLogCount = helpers.createSimpleGetQueryFunction('/external-task-log/count');
-
 module.exports = History;
 
-},{"../abstract-client-resource":1,"../helpers":2}],18:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],17:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3146,7 +3125,7 @@ Incident.count = function(params, done) {
 module.exports = Incident;
 
 
-},{"./../abstract-client-resource":1}],19:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],18:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3166,7 +3145,7 @@ JobDefinition.setRetries = function(params, done) {
 
 module.exports = JobDefinition;
 
-},{"./../abstract-client-resource":1}],20:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],19:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3255,7 +3234,7 @@ Job.delete = function(id, done) {
 
 module.exports = Job;
 
-},{"./../abstract-client-resource":1}],21:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],20:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3310,7 +3289,7 @@ Metrics.byInterval = function(params, done) {
 
 module.exports = Metrics;
 
-},{"./../abstract-client-resource":1}],22:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],21:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3388,7 +3367,7 @@ Migration.validate = function(params, done) {
 
 module.exports = Migration;
 
-},{"./../abstract-client-resource":1}],23:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],22:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -3754,7 +3733,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 module.exports = ProcessDefinition;
 
 
-},{"./../abstract-client-resource":1,"q":49}],24:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1,"q":48}],23:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3894,7 +3873,7 @@ var ProcessInstance = AbstractClientResource.extend(
 
 module.exports = ProcessInstance;
 
-},{"./../abstract-client-resource":1}],25:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],24:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -3945,7 +3924,7 @@ TaskReport.countByCandidateGroupAsCsv = function(done) {
 module.exports = TaskReport;
 
 
-},{"./../abstract-client-resource":1}],26:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],25:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -4472,7 +4451,7 @@ Task.deleteVariable = function(data, done) {
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":1,"q":49}],27:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1,"q":48}],26:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4707,7 +4686,7 @@ Tenant.options = function(options, done) {
 };
 module.exports = Tenant;
 
-},{"../../utils":43,"./../abstract-client-resource":1}],28:[function(_dereq_,module,exports){
+},{"../../utils":42,"./../abstract-client-resource":1}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -4971,7 +4950,7 @@ User.delete = function(options, done) {
 
 module.exports = User;
 
-},{"../../utils":43,"./../abstract-client-resource":1,"q":49}],29:[function(_dereq_,module,exports){
+},{"../../utils":42,"./../abstract-client-resource":1,"q":48}],28:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -5111,7 +5090,7 @@ Variable.instances = function(data, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":1}],30:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":1}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var Events = _dereq_('./events');
@@ -5198,7 +5177,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":31}],31:[function(_dereq_,module,exports){
+},{"./events":30}],30:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -5352,7 +5331,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],32:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 'use strict';
 /* global CamSDK, require, localStorage: false */
 
@@ -5378,13 +5357,6 @@ var constants = _dereq_('./constants');
 var Events = _dereq_('./../events');
 
 
-function extend(dest, add) {
-  for (var key in add) {
-    dest[key] = add[key];
-  }
-  return dest;
-}
-
 
 /**
  * A class to help handling embedded forms
@@ -5399,7 +5371,6 @@ function extend(dest, add) {
  * @param {String}            [options.processDefinitionKey]
  * @param {Element}           [options.formContainer]
  * @param {Element}           [options.formElement]
- * @param {Object}            [options.urlParams]
  * @param {String}            [options.formUrl]
  */
 function CamundaForm(options) {
@@ -5510,7 +5481,7 @@ CamundaForm.prototype.initialize = function(done) {
           done(error);
         }
       },
-      data: extend({ noCache: Date.now() }, this.options.urlParams || {})
+      data: { noCache: Date.now() }
     });
   } else {
 
@@ -6079,7 +6050,7 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":30,"./../events":31,"./constants":33,"./controls/choices-field-handler":35,"./controls/file-download-handler":36,"./controls/input-field-handler":37,"./dom-lib":38,"./variable-manager":41}],33:[function(_dereq_,module,exports){
+},{"./../base-class":29,"./../events":30,"./constants":32,"./controls/choices-field-handler":34,"./controls/file-download-handler":35,"./controls/input-field-handler":36,"./dom-lib":37,"./variable-manager":40}],32:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -6091,7 +6062,7 @@ module.exports = {
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],34:[function(_dereq_,module,exports){
+},{}],33:[function(_dereq_,module,exports){
 'use strict';
 
 var BaseClass = _dereq_('../../base-class');
@@ -6164,7 +6135,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":30,"./../dom-lib":38}],35:[function(_dereq_,module,exports){
+},{"../../base-class":29,"./../dom-lib":37}],34:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6299,7 +6270,7 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":33,"./../dom-lib":38,"./abstract-form-field":34}],36:[function(_dereq_,module,exports){
+},{"./../constants":32,"./../dom-lib":37,"./abstract-form-field":33}],35:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6350,7 +6321,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":33,"./abstract-form-field":34}],37:[function(_dereq_,module,exports){
+},{"./../constants":32,"./abstract-form-field":33}],36:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6455,7 +6426,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":33,"./abstract-form-field":34}],38:[function(_dereq_,module,exports){
+},{"./../constants":32,"./abstract-form-field":33}],37:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -6470,12 +6441,12 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],39:[function(_dereq_,module,exports){
+},{}],38:[function(_dereq_,module,exports){
 
 
 module.exports = _dereq_('./camunda-form');
 
-},{"./camunda-form":32}],40:[function(_dereq_,module,exports){
+},{"./camunda-form":31}],39:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -6563,7 +6534,7 @@ module.exports = {
   dateToString : dateToString
 };
 
-},{}],41:[function(_dereq_,module,exports){
+},{}],40:[function(_dereq_,module,exports){
 'use strict';
 
 var convertToType = _dereq_('./type-util').convertToType;
@@ -6683,7 +6654,7 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":40}],42:[function(_dereq_,module,exports){
+},{"./type-util":39}],41:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
@@ -6693,7 +6664,7 @@ module.exports = {
 };
 
 
-},{"./api-client":4,"./forms":39,"./utils":43}],43:[function(_dereq_,module,exports){
+},{"./api-client":3,"./forms":38,"./utils":42}],42:[function(_dereq_,module,exports){
 'use strict';
 
 
@@ -6832,7 +6803,7 @@ utils.escapeUrl = function(string) {
     .replace(/%5C/g, '%255C');
 };
 
-},{"./forms/type-util":40}],44:[function(_dereq_,module,exports){
+},{"./forms/type-util":39}],43:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -7886,7 +7857,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":45,"ieee754":46,"is-array":47}],45:[function(_dereq_,module,exports){
+},{"base64-js":44,"ieee754":45,"is-array":46}],44:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -8008,7 +7979,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],46:[function(_dereq_,module,exports){
+},{}],45:[function(_dereq_,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -8094,7 +8065,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],47:[function(_dereq_,module,exports){
+},{}],46:[function(_dereq_,module,exports){
 
 /**
  * isArray
@@ -8129,7 +8100,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],48:[function(_dereq_,module,exports){
+},{}],47:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -8194,7 +8165,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],49:[function(_dereq_,module,exports){
+},{}],48:[function(_dereq_,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -10246,7 +10217,7 @@ return Q;
 });
 
 }).call(this,_dereq_("FWaASH"))
-},{"FWaASH":48}],50:[function(_dereq_,module,exports){
+},{"FWaASH":47}],49:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -11405,7 +11376,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":51,"reduce":52}],51:[function(_dereq_,module,exports){
+},{"emitter":50,"reduce":51}],50:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -11571,7 +11542,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],52:[function(_dereq_,module,exports){
+},{}],51:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
@@ -11596,6 +11567,6 @@ module.exports = function(arr, fn, initial){
   
   return curr;
 };
-},{}]},{},[42])
-(42)
+},{}]},{},[41])
+(41)
 });
