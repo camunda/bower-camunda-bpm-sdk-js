@@ -4084,6 +4084,22 @@ var ProcessInstance = AbstractClientResource.extend(
     },
 
     /**
+     * Delete a set of process instances asynchronously (batch) based on a historic process instance query.
+     *
+     * @see https://docs.camunda.org/manual/latest/reference/rest/process-instance/post-delete-historic-query-based/
+     *
+     * @param   {Object}            payload
+     * @param   {requestCallback}   done
+     *
+     */
+    deleteAsyncHistoricQueryBased: function(payload, done) {
+      return this.http.post(this.path + '/delete-historic-query-based', {
+        data: payload,
+        done: done
+      });
+    },
+
+    /**
      * Set retries of jobs belonging to process instances asynchronously (batch).
      *
      * @see https://docs.camunda.org/manual/latest/reference/rest/process-instance/post-set-job-retries
@@ -4094,6 +4110,22 @@ var ProcessInstance = AbstractClientResource.extend(
      */
     setJobsRetriesAsync: function(payload, done) {
       return this.http.post(this.path + '/job-retries', {
+        data: payload,
+        done: done
+      });
+    },
+
+    /**
+     * Create a batch to set retries of jobs asynchronously based on a historic process instance query.
+     *
+     * @see https://docs.camunda.org/manual/latest/reference/rest/process-instance/post-set-job-retries-historic-query-based
+     *
+     * @param   {Object}            payload
+     * @param   {requestCallback}   done
+     *
+     */
+    setJobsRetriesAsyncHistoricQueryBased: function(payload, done) {
+      return this.http.post(this.path + '/job-retries-historic-query-based', {
         data: payload,
         done: done
       });
