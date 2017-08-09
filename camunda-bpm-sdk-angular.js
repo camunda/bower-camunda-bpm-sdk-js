@@ -117,7 +117,7 @@ var CamundaFormAngular = CamundaForm.extend(
 
 module.exports = CamundaFormAngular;
 
-},{"./../../forms/camunda-form":36,"./../../forms/constants":37}],2:[function(_dereq_,module,exports){
+},{"./../../forms/camunda-form":35,"./../../forms/constants":36}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var angular = (window.angular),
@@ -218,7 +218,7 @@ ngModule.directive('camVariableType', [function() {
 module.exports = CamundaFormAngular;
 
 
-},{"./../../forms/type-util":43,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
+},{"./../../forms/type-util":42,"./camunda-form-angular":1}],3:[function(_dereq_,module,exports){
 /** @namespace CamSDK */
 
 module.exports = {
@@ -228,7 +228,7 @@ module.exports = {
 };
 
 
-},{"./../api-client":7,"./../utils":45,"./forms":2}],4:[function(_dereq_,module,exports){
+},{"./../api-client":7,"./../utils":44,"./forms":2}],4:[function(_dereq_,module,exports){
 'use strict';
 
 // var HttpClient = require('./http-client');
@@ -498,7 +498,7 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":34,"./../events":35,"q":51}],5:[function(_dereq_,module,exports){
+},{"./../base-class":33,"./../events":34,"q":50}],5:[function(_dereq_,module,exports){
 exports.createSimpleGetQueryFunction = function(urlSuffix) {
   return function(params, done) {
     var url = this.path + urlSuffix;
@@ -717,7 +717,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,_dereq_("buffer").Buffer)
-},{"./../events":35,"./../utils":45,"buffer":46,"q":51,"superagent":52}],7:[function(_dereq_,module,exports){
+},{"./../events":34,"./../utils":44,"buffer":45,"q":50,"superagent":51}],7:[function(_dereq_,module,exports){
 'use strict';
 var Events = _dereq_('./../events');
 
@@ -827,7 +827,6 @@ CamundaClient.HttpClient = _dereq_('./http-client');
     _resources['execution']           = _dereq_('./resources/execution');
     _resources['migration']           = _dereq_('./resources/migration');
     _resources['drd']                 = _dereq_('./resources/drd');
-    _resources['modification']        = _dereq_('./resources/modification');
     /* jshint sub: false */
     var self = this;
 
@@ -899,7 +898,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":35,"./http-client":6,"./resources/authorization":8,"./resources/batch":9,"./resources/case-definition":10,"./resources/case-execution":11,"./resources/case-instance":12,"./resources/decision-definition":13,"./resources/deployment":14,"./resources/drd":15,"./resources/execution":16,"./resources/external-task":17,"./resources/filter":18,"./resources/group":19,"./resources/history":20,"./resources/incident":21,"./resources/job":23,"./resources/job-definition":22,"./resources/metrics":24,"./resources/migration":25,"./resources/modification":26,"./resources/process-definition":27,"./resources/process-instance":28,"./resources/task":30,"./resources/task-report":29,"./resources/tenant":31,"./resources/user":32,"./resources/variable":33}],8:[function(_dereq_,module,exports){
+},{"./../events":34,"./http-client":6,"./resources/authorization":8,"./resources/batch":9,"./resources/case-definition":10,"./resources/case-execution":11,"./resources/case-instance":12,"./resources/decision-definition":13,"./resources/deployment":14,"./resources/drd":15,"./resources/execution":16,"./resources/external-task":17,"./resources/filter":18,"./resources/group":19,"./resources/history":20,"./resources/incident":21,"./resources/job":23,"./resources/job-definition":22,"./resources/metrics":24,"./resources/migration":25,"./resources/process-definition":26,"./resources/process-instance":27,"./resources/task":29,"./resources/task-report":28,"./resources/tenant":30,"./resources/user":31,"./resources/variable":32}],8:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1843,7 +1842,7 @@ DRD.getXMLByKey = function(key, tenantId, done) {
 
 module.exports = DRD;
 
-},{"../../utils":45,"../abstract-client-resource":4}],16:[function(_dereq_,module,exports){
+},{"../../utils":44,"../abstract-client-resource":4}],16:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -2078,21 +2077,6 @@ ExternalTask.unlock = function(params, done) {
  */
 ExternalTask.retries = function(params, done) {
   return this.http.put(this.path + '/' + params.id + '/retries', {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Set the number of retries left to execute an external task asynchronously. If retries are set to 0, an incident is created.
- *
- * @see https://docs.camunda.org/manual/latest/reference/rest/external-task/post-retries-async/
- *
- * @param   {Object}            params
- * @param   {requestCallback}   done
- */
-ExternalTask.retriesAsync = function(params, done) {
-  return this.http.post(this.path + '/retries-async', {
     data: params,
     done: done
   });
@@ -2484,7 +2468,7 @@ Group.delete = function(options, done) {
 
 module.exports = Group;
 
-},{"../../utils":45,"./../abstract-client-resource":4}],20:[function(_dereq_,module,exports){
+},{"../../utils":44,"./../abstract-client-resource":4}],20:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('../abstract-client-resource');
@@ -3670,67 +3654,6 @@ module.exports = Migration;
 },{"./../abstract-client-resource":4}],26:[function(_dereq_,module,exports){
 'use strict';
 
-var AbstractClientResource = _dereq_('./../abstract-client-resource');
-
-/**
- * Modification Resource
- * @class
- * @memberof CamSDK.client.resource
- * @augments CamSDK.client.AbstractClientResource
- */
-var Modification = AbstractClientResource.extend();
-
-/**
- * Path used by the resource to perform HTTP queries
- * @type {String}
- */
-Modification.path = 'modification';
-
-/**
- * Execute a modification
- * @param  {Object}   params
- * @param  {String}   [params.processDefinitionId]
- * @param  {String}   [params.skipCustomListeners]
- * @param  {String}   [params.skipIoMappings]
- * @param  {String}   [params.processInstanceIds]
- * @param  {String}   [params.processInstanceQuery]
- * @param  {String}   [params.instructions]
- * @param  {Function} done
- */
-Modification.execute = function(params, done) {
-  var path = this.path + '/execute';
-
-  return this.http.post(path, {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Execute a modification asynchronously
- * @param  {Object}   params
- * @param  {String}   [params.processDefinitionId]
- * @param  {String}   [params.skipCustomListeners]
- * @param  {String}   [params.skipIoMappings]
- * @param  {String}   [params.processInstanceIds]
- * @param  {String}   [params.processInstanceQuery]
- * @param  {String}   [params.instructions]
- * @param  {Function} done
- */
-Modification.executeAsync = function(params, done) {
-  var path = this.path + '/executeAsync';
-
-  return this.http.post(path, {
-    data: params,
-    done: done
-  });
-};
-
-module.exports = Modification;
-
-},{"./../abstract-client-resource":4}],27:[function(_dereq_,module,exports){
-'use strict';
-
 var Q = _dereq_('q');
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
 
@@ -4109,7 +4032,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 
 module.exports = ProcessDefinition;
 
-},{"./../abstract-client-resource":4,"q":51}],28:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":50}],27:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4275,28 +4198,13 @@ var ProcessInstance = AbstractClientResource.extend(
         data: payload,
         done: done
       });
-    },
-
-    /**
-     * Activates or suspends process instances asynchronously with a list of process instance ids, a process instance query, and/or a historical process instance query
-     *
-     * @see https://docs.camunda.org/manual/latest/reference/rest/process-instance/post-activate-suspend-in-batch/
-     *
-     * @param   {Object}            payload
-     * @param   {requestCallback}   done
-     */
-    suspendAsync: function(payload, done) {
-      return this.http.post(this.path + '/suspended-async', {
-        data: payload,
-        done: done
-      });
     }
   });
 
 
 module.exports = ProcessInstance;
 
-},{"./../abstract-client-resource":4}],29:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],28:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4347,7 +4255,7 @@ TaskReport.countByCandidateGroupAsCsv = function(done) {
 module.exports = TaskReport;
 
 
-},{"./../abstract-client-resource":4}],30:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -4874,7 +4782,7 @@ Task.deleteVariable = function(data, done) {
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":4,"q":51}],31:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4,"q":50}],30:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -5109,7 +5017,7 @@ Tenant.options = function(options, done) {
 };
 module.exports = Tenant;
 
-},{"../../utils":45,"./../abstract-client-resource":4}],32:[function(_dereq_,module,exports){
+},{"../../utils":44,"./../abstract-client-resource":4}],31:[function(_dereq_,module,exports){
 'use strict';
 
 var Q = _dereq_('q');
@@ -5373,7 +5281,7 @@ User.delete = function(options, done) {
 
 module.exports = User;
 
-},{"../../utils":45,"./../abstract-client-resource":4,"q":51}],33:[function(_dereq_,module,exports){
+},{"../../utils":44,"./../abstract-client-resource":4,"q":50}],32:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -5528,7 +5436,7 @@ Variable.instances = function(params, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":4}],34:[function(_dereq_,module,exports){
+},{"./../abstract-client-resource":4}],33:[function(_dereq_,module,exports){
 'use strict';
 
 var Events = _dereq_('./events');
@@ -5615,7 +5523,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":35}],35:[function(_dereq_,module,exports){
+},{"./events":34}],34:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -5769,7 +5677,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],36:[function(_dereq_,module,exports){
+},{}],35:[function(_dereq_,module,exports){
 'use strict';
 /* global CamSDK, require, localStorage: false */
 
@@ -6496,7 +6404,7 @@ CamundaForm.extend = BaseClass.extend;
 module.exports = CamundaForm;
 
 
-},{"./../base-class":34,"./../events":35,"./constants":37,"./controls/choices-field-handler":39,"./controls/file-download-handler":40,"./controls/input-field-handler":41,"./dom-lib":42,"./variable-manager":44}],37:[function(_dereq_,module,exports){
+},{"./../base-class":33,"./../events":34,"./constants":36,"./controls/choices-field-handler":38,"./controls/file-download-handler":39,"./controls/input-field-handler":40,"./dom-lib":41,"./variable-manager":43}],36:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = {
@@ -6508,7 +6416,7 @@ module.exports = {
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],38:[function(_dereq_,module,exports){
+},{}],37:[function(_dereq_,module,exports){
 'use strict';
 
 var BaseClass = _dereq_('../../base-class');
@@ -6581,7 +6489,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":34,"./../dom-lib":42}],39:[function(_dereq_,module,exports){
+},{"../../base-class":33,"./../dom-lib":41}],38:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6716,7 +6624,7 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":37,"./../dom-lib":42,"./abstract-form-field":38}],40:[function(_dereq_,module,exports){
+},{"./../constants":36,"./../dom-lib":41,"./abstract-form-field":37}],39:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6767,7 +6675,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":37,"./abstract-form-field":38}],41:[function(_dereq_,module,exports){
+},{"./../constants":36,"./abstract-form-field":37}],40:[function(_dereq_,module,exports){
 'use strict';
 
 var constants = _dereq_('./../constants'),
@@ -6872,7 +6780,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":37,"./abstract-form-field":38}],42:[function(_dereq_,module,exports){
+},{"./../constants":36,"./abstract-form-field":37}],41:[function(_dereq_,module,exports){
 (function (global){
 'use strict';
 
@@ -6887,7 +6795,7 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],43:[function(_dereq_,module,exports){
+},{}],42:[function(_dereq_,module,exports){
 'use strict';
 
 var INTEGER_PATTERN = /^-?[\d]+$/;
@@ -6896,7 +6804,7 @@ var FLOAT_PATTERN = /^(0|(-?(((0|[1-9]\d*)\.\d+)|([1-9]\d*))))([eE][-+]?[0-9]+)?
 
 var BOOLEAN_PATTERN = /^(true|false)$/;
 
-var DATE_PATTERN = /^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(|\.[0-9]{0,4})([+-][0-9]{4}|Z)$/;
+var DATE_PATTERN = /^(\d{2}|\d{4})(?:\-)([0]{1}\d{1}|[1]{1}[0-2]{1})(?:\-)([0-2]{1}\d{1}|[3]{1}[0-1]{1})T(?:\s)?([0-1]{1}\d{1}|[2]{1}[0-3]{1}):([0-5]{1}\d{1}):([0-5]{1}\d{1})?$/;
 
 var isType = function(value, type) {
   switch(type) {
@@ -6975,7 +6883,7 @@ module.exports = {
   dateToString : dateToString
 };
 
-},{}],44:[function(_dereq_,module,exports){
+},{}],43:[function(_dereq_,module,exports){
 'use strict';
 
 var convertToType = _dereq_('./type-util').convertToType;
@@ -7095,7 +7003,7 @@ VariableManager.prototype.variableNames = function() {
 module.exports = VariableManager;
 
 
-},{"./type-util":43}],45:[function(_dereq_,module,exports){
+},{"./type-util":42}],44:[function(_dereq_,module,exports){
 'use strict';
 
 
@@ -7234,7 +7142,7 @@ utils.escapeUrl = function(string) {
     .replace(/%5C/g, '%255C');
 };
 
-},{"./forms/type-util":43}],46:[function(_dereq_,module,exports){
+},{"./forms/type-util":42}],45:[function(_dereq_,module,exports){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -8288,7 +8196,7 @@ function decodeUtf8Char (str) {
   }
 }
 
-},{"base64-js":47,"ieee754":48,"is-array":49}],47:[function(_dereq_,module,exports){
+},{"base64-js":46,"ieee754":47,"is-array":48}],46:[function(_dereq_,module,exports){
 var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
 ;(function (exports) {
@@ -8410,7 +8318,7 @@ var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 	exports.fromByteArray = uint8ToBase64
 }(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
 
-},{}],48:[function(_dereq_,module,exports){
+},{}],47:[function(_dereq_,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -8496,7 +8404,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],49:[function(_dereq_,module,exports){
+},{}],48:[function(_dereq_,module,exports){
 
 /**
  * isArray
@@ -8531,7 +8439,7 @@ module.exports = isArray || function (val) {
   return !! val && '[object Array]' == str.call(val);
 };
 
-},{}],50:[function(_dereq_,module,exports){
+},{}],49:[function(_dereq_,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -8596,7 +8504,7 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 
-},{}],51:[function(_dereq_,module,exports){
+},{}],50:[function(_dereq_,module,exports){
 (function (process){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -10673,7 +10581,7 @@ return Q;
 });
 
 }).call(this,_dereq_("FWaASH"))
-},{"FWaASH":50}],52:[function(_dereq_,module,exports){
+},{"FWaASH":49}],51:[function(_dereq_,module,exports){
 /**
  * Module dependencies.
  */
@@ -11832,7 +11740,7 @@ request.put = function(url, data, fn){
 
 module.exports = request;
 
-},{"emitter":53,"reduce":54}],53:[function(_dereq_,module,exports){
+},{"emitter":52,"reduce":53}],52:[function(_dereq_,module,exports){
 
 /**
  * Expose `Emitter`.
@@ -11998,7 +11906,7 @@ Emitter.prototype.hasListeners = function(event){
   return !! this.listeners(event).length;
 };
 
-},{}],54:[function(_dereq_,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 
 /**
  * Reduce `arr` with `fn`.
