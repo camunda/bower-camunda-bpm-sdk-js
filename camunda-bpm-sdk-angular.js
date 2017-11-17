@@ -58,12 +58,12 @@ var CamundaFormAngular = CamundaForm.extend(
 
       this.formElement = angular.element(this.formElement);
 
+      var moment = _dereq_('moment');
       var injector = this.formElement.injector();
       var scope = this.formElement.scope();
 
       /*eslint-disable */
-      (function(camForm, $scope) {
-
+      (function(camForm, $scope, moment) {
       // hook to create the service with injection
         var inject = function(extensions) {
         // if result is an array or function we expect
@@ -79,7 +79,7 @@ var CamundaFormAngular = CamundaForm.extend(
         eval(script);
       /* jshint evil: false */
 
-      })(this, scope);
+      })(this, scope, moment);
       /*eslint-enable */
 
     },
@@ -117,7 +117,7 @@ var CamundaFormAngular = CamundaForm.extend(
 
 module.exports = CamundaFormAngular;
 
-},{"./../../forms/camunda-form":36,"./../../forms/constants":37}],2:[function(_dereq_,module,exports){
+},{"./../../forms/camunda-form":36,"./../../forms/constants":37,"moment":54}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var angular = (window.angular),
@@ -7334,11 +7334,7 @@ VariableManager.prototype.fetchVariable = function(variable) {
 };
 
 VariableManager.prototype.createVariable = function(variable) {
-  if(!this.variables[variable.name]) {
-    this.variables[variable.name] = variable;
-  } else {
-    throw new Error('Cannot add variable with name '+variable.name+': already exists.');
-  }
+  this.variables[variable.name] = variable;
 };
 
 VariableManager.prototype.destroyVariable = function(variableName) {
