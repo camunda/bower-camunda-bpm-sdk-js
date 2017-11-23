@@ -1226,6 +1226,7 @@ module.exports = CaseDefinition;
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 /**
  * No-Op callback
@@ -1286,7 +1287,7 @@ CaseExecution.complete = function(executionId, params, done) {
  * Deletes a variable in the context of a given case execution. Deletion does not propagate upwards in the case execution hierarchy.
  */
 CaseExecution.deleteVariable = function(data, done) {
-  return this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
+  return this.http.del(this.path + '/' + data.id + '/localVariables/' + utils.escapeUrl(data.varId), {
     done: done
   });
 };
@@ -1307,10 +1308,11 @@ CaseExecution.modifyVariables = function(data, done) {
 
 module.exports = CaseExecution;
 
-},{"./../abstract-client-resource":4}],12:[function(_dereq_,module,exports){
+},{"../../utils":45,"./../abstract-client-resource":4}],12:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 /**
  * CaseInstance Resource
@@ -1355,9 +1357,26 @@ CaseInstance.terminate = function(instanceId, params, done) {
   });
 };
 
+/**
+ * Sets a variable of a given case instance by id.
+ *
+ * @see http://docs.camunda.org/manual/develop/reference/rest/case-instance/variables/put-variable/
+ *
+ * @param   {uuid}              id
+ * @param   {Object}            params
+ * @param   {requestCallback}   done
+ */
+CaseInstance.setVariable = function(id, params, done) {
+  var url = this.path + '/' + id + '/variables/' + utils.escapeUrl(params.varId);
+  return this.http.put(url, {
+    data: params,
+    done: done
+  });
+};
+
 module.exports = CaseInstance;
 
-},{"./../abstract-client-resource":4}],13:[function(_dereq_,module,exports){
+},{"../../utils":45,"./../abstract-client-resource":4}],13:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -1855,6 +1874,7 @@ module.exports = DRD;
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 
 
@@ -1876,7 +1896,7 @@ Execution.path = 'execution';
  * Deletes a variable in the context of a given execution. Deletion does not propagate upwards in the execution hierarchy.
  */
 Execution.deleteVariable = function(data, done) {
-  return this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
+  return this.http.del(this.path + '/' + data.id + '/localVariables/' + utils.escapeUrl(data.varId), {
     done: done
   });
 };
@@ -1897,7 +1917,7 @@ Execution.modifyVariables = function(data, done) {
 module.exports = Execution;
 
 
-},{"./../abstract-client-resource":4}],17:[function(_dereq_,module,exports){
+},{"../../utils":45,"./../abstract-client-resource":4}],17:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4410,6 +4430,7 @@ module.exports = ProcessDefinition;
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 /**
  * Process Instance Resource
@@ -4587,13 +4608,31 @@ var ProcessInstance = AbstractClientResource.extend(
         data: payload,
         done: done
       });
+    },
+
+    /**
+     * Sets a variable of a given process instance by id.
+     *
+     * @see http://docs.camunda.org/manual/develop/reference/rest/process-instance/variables/put-variable/
+     *
+     * @param   {uuid}              id
+     * @param   {Object}            params
+     * @param   {requestCallback}   done
+     */
+    setVariable: function(id, params, done) {
+      var url = this.path + '/' + id + '/variables/' + utils.escapeUrl(params.name);
+      return this.http.put(url, {
+        data: params,
+        done: done
+      });
     }
+
   });
 
 
 module.exports = ProcessInstance;
 
-},{"./../abstract-client-resource":4}],29:[function(_dereq_,module,exports){
+},{"../../utils":45,"./../abstract-client-resource":4}],29:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -4649,6 +4688,7 @@ module.exports = TaskReport;
 
 var Q = _dereq_('q');
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
+var utils = _dereq_('../../utils');
 
 /**
  * No-Op callback
@@ -5162,7 +5202,7 @@ Task.modifyVariables = function(data, done) {
  * Removes a local variable from a task.
  */
 Task.deleteVariable = function(data, done) {
-  return this.http.del(this.path + '/' + data.id + '/localVariables/' + data.varId, {
+  return this.http.del(this.path + '/' + data.id + '/localVariables/' + utils.escapeUrl(data.varId), {
     done: done
   });
 };
@@ -5171,7 +5211,7 @@ Task.deleteVariable = function(data, done) {
 module.exports = Task;
 
 
-},{"./../abstract-client-resource":4,"q":55}],31:[function(_dereq_,module,exports){
+},{"../../utils":45,"./../abstract-client-resource":4,"q":55}],31:[function(_dereq_,module,exports){
 'use strict';
 
 var AbstractClientResource = _dereq_('./../abstract-client-resource');
@@ -7334,7 +7374,11 @@ VariableManager.prototype.fetchVariable = function(variable) {
 };
 
 VariableManager.prototype.createVariable = function(variable) {
-  this.variables[variable.name] = variable;
+  if(!this.variables[variable.name]) {
+    this.variables[variable.name] = variable;
+  } else {
+    throw new Error('Cannot add variable with name '+variable.name+': already exists.');
+  }
 };
 
 VariableManager.prototype.destroyVariable = function(variableName) {
@@ -7549,7 +7593,7 @@ utils.series = function(tasks, callback) {
  * @returns {string}
  */
 utils.escapeUrl = function(string) {
-  return encodeURI(string)
+  return encodeURIComponent(string)
     .replace(/\//g, '%2F')
     .replace(/%2F/g, '%252F')
     .replace(/\*/g, '%2A')
