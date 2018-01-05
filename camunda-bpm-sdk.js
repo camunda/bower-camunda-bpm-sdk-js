@@ -3718,7 +3718,16 @@ var ProcessDefinition = AbstractClientResource.extend(
    * @param  {Function} [done]
    */
     statistics: function(data, done) {
-      var path = this.path +'/'+ (data.id ? data.id : 'key/'+ data.key) +'/statistics';
+      var path = this.path;
+
+      if(data.id) {
+        path += '/' + data.id;
+      } else if (data.key) {
+        path += '/key/'+ data.key;
+      }
+
+      path += '/statistics';
+
       return this.http.get(path, {
         data: data,
         done: done || noop
