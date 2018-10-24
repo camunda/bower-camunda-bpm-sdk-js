@@ -6694,13 +6694,15 @@ CamundaForm.prototype.transformFiles = function(callback) {
   for (var i in this.fields) {
     var element = this.fields[i].element[0];
     if(element.getAttribute('type') === 'file') {
+      var fileVar = that.variableManager.variables[that.fields[i].variableName];
+
       if(typeof FileReader === 'function' && element.files.length > 0) {
         if(element.files[0].size > (parseInt(element.getAttribute('cam-max-filesize'),10) || 5000000)) {
           throw new Error('Maximum file size of ' + bytesToSize(parseInt(element.getAttribute('cam-max-filesize'),10) || 5000000) + ' exceeded.');
         }
         var reader = new FileReader();
         /* jshint ignore:start */
-        reader.onloadend = (function(i, element) {
+        reader.onloadend = (function(i, element, fileVar) {
           return function(e) {
             var binary = '';
             var bytes = new Uint8Array( e.target.result );
@@ -6708,7 +6710,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
             for (var j = 0; j < len; j++) {
               binary += String.fromCharCode( bytes[ j ] );
             }
-            var fileVar = that.variableManager.variables[that.fields[i].variableName];
+
             fileVar.value = btoa(binary);
 
             // set file metadata as value info
@@ -6721,12 +6723,15 @@ CamundaForm.prototype.transformFiles = function(callback) {
 
             callCallback();
           };
-        })(i, element);
+        })(i, element, fileVar);
         /* jshint ignore:end */
         reader.readAsArrayBuffer(element.files[0]);
         counter++;
       } else {
-        that.variableManager.variables[that.fields[i].variableName].value = null;
+        fileVar.value = '';
+        fileVar.valueInfo = {
+          filename: ''
+        };
       }
     }
   }
