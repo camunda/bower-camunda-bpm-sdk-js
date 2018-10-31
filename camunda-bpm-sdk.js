@@ -2319,7 +2319,7 @@ History.path = 'history';
 
 
 /**
- * Queries for the number of user operation log entries that fulfill the given parameters
+ * Query for user operation log entries that fulfill the given parameters.
  *
  * @param {Object}   [params]
  * @param {String}   [params.processDefinitionId]   Filter by process definition id.
@@ -2343,22 +2343,6 @@ History.path = 'history';
  * @param {Number}   [params.maxResults]            Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
  * @param {Function} done
  */
-History.userOperationCount = function(params, done) {
-  if (typeof params === 'function') {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.get(this.path + '/user-operation/count', {
-    data: params,
-    done: done
-  });
-};
-
-/**
- * Queries for user operation log entries that fulfill the given parameters
- * This method takes the same parameters as `History.userOperationCount`.
- */
 History.userOperation = function(params, done) {
   if (typeof params === 'function') {
     done = arguments[0];
@@ -2370,7 +2354,6 @@ History.userOperation = function(params, done) {
     done: done
   });
 };
-
 
 
 /**
@@ -2549,27 +2532,6 @@ History.decisionInstanceCount = function(params, done) {
     done: done
   });
 };
-
-/**
- * Delete historic decision instances asynchronously. With creation of a batch operation.
- *
- * @param params - either list of decision instance ID's or an object corresponding to a decisionInstances
- *                  POST request based query
- * @param done - a callback function
- * @returns {*}
- */
-History.deleteDecisionInstancesAsync = function(params, done) {
-  if (typeof params === 'function') {
-    done = arguments[0];
-    params = {};
-  }
-
-  return this.http.post(this.path + '/decision-instance/delete', {
-    data: params,
-    done: done
-  });
-};
-
 
 /**
  * Query for historic batches that fulfill given parameters. Parameters may be the properties of batches, such as the id or type.
@@ -3971,14 +3933,6 @@ var ProcessDefinition = AbstractClientResource.extend(
       return AbstractClientResource.list.apply(this, arguments);
     },
 
-    /**
-     * Get a count of process definitions
-     * Same parameters as list
-     */
-    count: function() {
-      return AbstractClientResource.count.apply(this, arguments);
-    },
-
 
   /**
    * Fetch the variables of a process definition
@@ -4087,17 +4041,17 @@ var ProcessDefinition = AbstractClientResource.extend(
 
       var queryParams = '?';
       var param = 'cascade';
-      if (typeof data[param] === 'boolean') {
-        queryParams += param + '=' + data[param];
+      if (data[param]) {
+        queryParams += param + '=true';
       }
 
       param = 'skipCustomListeners';
-      if (typeof data[param] === 'boolean') {
+      if (data[param]) {
         if (queryParams.length > 1) {
           queryParams += '&';
         }
 
-        queryParams += param + '=' + data[param];
+        queryParams += param + '=true';
       }
 
       return this.http.del(this.path +'/'+ pointer + queryParams, {
@@ -5407,13 +5361,14 @@ User.create = function(options, done) {
  * @param  {Function} done
  */
 User.list = function(options, done) {
-  if (typeof options === 'function') {
+  if (arguments.length === 1) {
     done = options;
     options = {};
   }
   else {
     options = options || {};
   }
+
   return this.http.get(this.path, {
     data: options,
     done: done || noop
@@ -5541,21 +5496,6 @@ User.delete = function(options, done) {
   var id = typeof options === 'string' ? options : options.id;
 
   return this.http.del(this.path + '/' + utils.escapeUrl(id), {
-    done: done || noop
-  });
-};
-
-
-/**
- * Unlock a user
- * @param  {Object|uuid} options You can either pass an object (with at least a id property) or the id of the user to be unlocked
- * @param  {uuid} options.id
- * @param  {Function} done
- */
-User.unlock = function(options, done) {
-  var id = typeof options === 'string' ? options : options.id;
-
-  return this.http.get(this.path + '/' + utils.escapeUrl(id) + '/unlock', {
     done: done || noop
   });
 };
@@ -5713,23 +5653,6 @@ Variable.instances = function(params, done) {
     done: done
   });
 };
-
-/**
- * Get a count of variables
- * Same parameters as instances
- */
-
-Variable.count = function(params, done) {
-  var path = this.path + '/count';
-
-  return this.http.post(path, {
-    data: params,
-    done: done
-  });
-};
-
-
-
 
 module.exports = Variable;
 
@@ -6476,15 +6399,13 @@ CamundaForm.prototype.transformFiles = function(callback) {
   for (var i in this.fields) {
     var element = this.fields[i].element[0];
     if(element.getAttribute('type') === 'file') {
-      var fileVar = that.variableManager.variables[that.fields[i].variableName];
-
       if(typeof FileReader === 'function' && element.files.length > 0) {
         if(element.files[0].size > (parseInt(element.getAttribute('cam-max-filesize'),10) || 5000000)) {
           throw new Error('Maximum file size of ' + bytesToSize(parseInt(element.getAttribute('cam-max-filesize'),10) || 5000000) + ' exceeded.');
         }
         var reader = new FileReader();
         /* jshint ignore:start */
-        reader.onloadend = (function(i, element, fileVar) {
+        reader.onloadend = (function(i, element) {
           return function(e) {
             var binary = '';
             var bytes = new Uint8Array( e.target.result );
@@ -6492,7 +6413,7 @@ CamundaForm.prototype.transformFiles = function(callback) {
             for (var j = 0; j < len; j++) {
               binary += String.fromCharCode( bytes[ j ] );
             }
-
+            var fileVar = that.variableManager.variables[that.fields[i].variableName];
             fileVar.value = btoa(binary);
 
             // set file metadata as value info
@@ -6505,15 +6426,12 @@ CamundaForm.prototype.transformFiles = function(callback) {
 
             callCallback();
           };
-        })(i, element, fileVar);
+        })(i, element);
         /* jshint ignore:end */
         reader.readAsArrayBuffer(element.files[0]);
         counter++;
       } else {
-        fileVar.value = '';
-        fileVar.valueInfo = {
-          filename: ''
-        };
+        that.variableManager.variables[that.fields[i].variableName].value = null;
       }
     }
   }
