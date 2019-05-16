@@ -3061,7 +3061,65 @@ History.deleteProcessInstancesAsync = function(params, done) {
   });
 };
 
+/**
+ * Set removal time to historic process instances asynchronously. With creation of a batch operation.
+ *
+ * @param params - either list of process instance ID's or an object corresponding to a processInstances
+ *                  POST request based query
+ * @param done - a callback function
+ * @returns {*}
+ */
+History.setRemovalTimeToHistoricProcessInstancesAsync = function(params, done) {
+  if (typeof params === 'function') {
+    done = arguments[0];
+    params = {};
+  }
 
+  return this.http.post(this.path + '/process-instance/set-removal-time', {
+    data: params,
+    done: done
+  });
+};
+
+/**
+ * Set removal time to historic decision instances asynchronously. With creation of a batch operation.
+ *
+ * @param params - either list of decision instance ID's or an object corresponding to a decisionInstances
+ *                  POST request based query
+ * @param done - a callback function
+ * @returns {*}
+ */
+History.setRemovalTimeToHistoricDecisionInstancesAsync = function(params, done) {
+  if (typeof params === 'function') {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.post(this.path + '/decision-instance/set-removal-time', {
+    data: params,
+    done: done
+  });
+};
+
+/**
+ * Set removal time to historic batches asynchronously. With creation of a batch operation.
+ *
+ * @param params - either list of batch ID's or an object corresponding to a batches
+ *                  POST request based query
+ * @param done - a callback function
+ * @returns {*}
+ */
+History.setRemovalTimeToHistoricBatchesAsync = function(params, done) {
+  if (typeof params === 'function') {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.post(this.path + '/batch/set-removal-time', {
+    data: params,
+    done: done
+  });
+};
 
 /**
  * Query for historic decision instances that fulfill the given parameters.
