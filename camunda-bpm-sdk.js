@@ -2311,7 +2311,7 @@ Filter["delete"] = function (id, done) {
 
 
 Filter.authorizations = function (id, done) {
-  if (arguments.length === 1) {
+  if (typeof id === 'function') {
     return this.http.options(this.path, {
       done: id,
       headers: {
@@ -2383,7 +2383,7 @@ Group.path = 'group';
 Group.options = function (options, done) {
   var id;
 
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     id = '';
   } else {
@@ -2431,7 +2431,7 @@ Group.create = function (options, done) {
 
 
 Group.count = function (options, done) {
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     options = {};
   } else {
@@ -2492,8 +2492,16 @@ Group.list = function (options, done) {
     options = options || {};
   }
 
+  var query = {};
+
+  if (options.maxResults) {
+    query.maxResults = options.maxResults;
+    query.firstResult = options.firstResult;
+  }
+
   return this.http.post(this.path, {
     data: options,
+    query: query,
     done: done || noop
   });
 };
@@ -3433,6 +3441,78 @@ History.caseActivityInstanceCount = function (params, done) {
   }
 
   return this.http.get(this.path + '/case-activity-instance/count', {
+    data: params,
+    done: done
+  });
+};
+/**
+ * Queries for historic activity instances that fulfill the given parameters.
+ * @param {Object}  [params]
+ * @param {String}  params.activityInstanceId	    Filter by activity instance id.
+ * @param {String}  params.processInstanceId      Filter by process instance id.
+ * @param {String}  params.processDefinitionId    Filter by process definition id.
+ * @param {String}  params.executionId            Filter by the id of the execution that executed the activity instance.
+ * @param {String}  params.activityId             Filter by the activity id (according to BPMN 2.0 XML).
+ * @param {String}  params.activityName           Filter by the activity name (according to BPMN 2.0 XML).
+ * @param {String}  params.activityType           Filter by activity type.
+ * @param {String}  params.taskAssignee           Only include activity instances that are user tasks and assigned to a given user.
+ * @param {Boolean} params.finished               Only include finished activity instances. Value may only be true, as false behaves the same as when the property is not set.
+ * @param {Boolean} params.unfinished             Only include unfinished activity instances. Value may only be true, as false behaves the same as when the property is not set.
+ * @param {Boolean} params.canceled               Only include canceled activity instances. Value may only be true, as false behaves the same as when the property is not set.
+ * @param {Boolean} params.completeScope          Only include activity instances which completed a scope. Value may only be true, as false behaves the same as when the property is not set.
+ * @param {String}  params.startedBefore          Restrict to instances that were started before the given date. By default*, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.
+ * @param {String}  params.startedAfter           Restrict to instances that were started after the given date. By default*, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.
+ * @param {String}  params.finishedBefore         Restrict to instances that were finished before the given date. By default*, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.
+ * @param {String}  params.finishedAfter          Restrict to instances that were finished after the given date. By default*, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.
+ * @param {String}  params.tenantIdIn             Filter by a comma-separated list of tenant ids. An activity instance must have one of the given tenant ids.
+ * @param {String}  params.sortBy                 Sort the results by a given criterion. Valid values are activityInstanceId, instanceId, executionId, activityId, activityName, activityType, startTime, endTime, duration, definitionId, occurrence and tenantId. Must be used in conjunction with the sortOrder parameter.
+ * @param {String}  params.sortOrder              Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
+ * @param {Number}  params.firstResult            Pagination of results. Specifies the index of the first result to return.
+ * @param {Number}  params.maxResults             Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left.
+ */
+
+
+History.activityInstance = function (params, done) {
+  if (typeof params === 'function') {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.get(this.path + '/activity-instance', {
+    data: params,
+    done: done
+  });
+};
+/**
+ * Queries for historic activity instances that fulfill the given parameters.
+ * @param {Object}  [params]
+ * @param {String}  params.incidentId           Restricts to incidents that have the given id.
+ * @param {String}  params.incidentType         Restricts to incidents that belong to the given incident type. See the User Guide for a list of incident types.
+ * @param {String}  params.incidentMessage      Restricts to incidents that have the given incident message.
+ * @param {String}  params.processDefinitionId  Restricts to incidents that belong to a process definition with the given id.
+ * @param {String}  params.processInstanceId    Restricts to incidents that belong to a process instance with the given id.
+ * @param {String}  params.executionId          Restricts to incidents that belong to an execution with the given id.
+ * @param {String}  params.activityId           Restricts to incidents that belong to an activity with the given id.
+ * @param {String}  params.causeIncidentId      Restricts to incidents that have the given incident id as cause incident.
+ * @param {String}  params.rootCauseIncidentId  Restricts to incidents that have the given incident id as root cause incident.
+ * @param {String}  params.configuration        Restricts to incidents that have the given parameter set as configuration.
+ * @param {String}  params.tenantIdIn           Restricts to incidents that have one of the given comma-separated tenant ids.
+ * @param {String}  params.jobDefinitionIdIn    Restricts to incidents that have one of the given comma-separated job definition ids.
+ * @param {String}  params.open             	  Restricts to incidents that are open.
+ * @param {String}  params.deleted              Restricts to incidents that are deleted.
+ * @param {String}  params.resolved             Restricts to incidents that are resolved.
+ * @param {String}  params.sortBy               Sort the results lexicographically by a given criterion. Valid values are incidentId, incidentMessage, createTime, endTime, incidentType, executionId, activityId, processInstanceId, processDefinitionId, causeIncidentId, rootCauseIncidentId, configuration, tenantId and incidentState. Must be used in conjunction with the sortOrder parameter.
+ * @param {String}  params.sortOrder            Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.
+ */
+
+
+History.incident = function (params, done) {
+  if (typeof params === 'function') {
+    done = arguments[0];
+    params = {};
+  }
+
+  return this.http.get(this.path + '/incident', {
     data: params,
     done: done
   });
@@ -5039,6 +5119,11 @@ var ProcessInstance = AbstractClientResource.extend(
       done: done
     });
   },
+  getActivityInstances: function getActivityInstances(id, done) {
+    return this.http.get(this.path + '/' + id + '/activity-instances', {
+      done: done
+    });
+  },
 
   /**
    * Post process instance modifications
@@ -5926,7 +6011,7 @@ Tenant.create = function (options, done) {
 
 
 Tenant.count = function (options, done) {
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     options = {};
   } else {
@@ -5988,7 +6073,7 @@ Tenant.get = function (options, done) {
 
 
 Tenant.list = function (options, done) {
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     options = {};
   } else {
@@ -6092,7 +6177,7 @@ Tenant["delete"] = function (options, done) {
 Tenant.options = function (options, done) {
   var id;
 
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     id = '';
   } else {
@@ -6168,7 +6253,7 @@ User.path = 'user';
 User.options = function (options, done) {
   var id;
 
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     id = '';
   } else {
@@ -6280,7 +6365,7 @@ User.list = function (options, done) {
 
 
 User.count = function (options, done) {
-  if (arguments.length === 1) {
+  if (typeof options === 'function') {
     done = options;
     options = {};
   } else {
