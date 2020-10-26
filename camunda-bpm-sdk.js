@@ -285,7 +285,7 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":33,"./../events":34,"q":52}],2:[function(require,module,exports){
+},{"./../base-class":34,"./../events":35,"q":53}],2:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -557,7 +557,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,require("buffer").Buffer)
-},{"./../../vendor/superagent":55,"./../events":34,"./../utils":46,"buffer":48,"q":52}],4:[function(require,module,exports){
+},{"./../../vendor/superagent":56,"./../events":35,"./../utils":47,"buffer":49,"q":53}],4:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -675,6 +675,7 @@ CamundaClient.HttpClient = require('./http-client');
     _resources['case-definition']     = require('./resources/case-definition');
     _resources['user']                = require('./resources/user');
     _resources['group']               = require('./resources/group');
+    _resources['telemetry']           = require('./resources/telemetry');
     _resources['tenant']              = require('./resources/tenant');
     _resources['incident']            = require('./resources/incident');
     _resources['job-definition']      = require('./resources/job-definition');
@@ -758,7 +759,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":34,"./http-client":3,"./resources/authorization":5,"./resources/batch":6,"./resources/case-definition":7,"./resources/case-execution":8,"./resources/case-instance":9,"./resources/decision-definition":10,"./resources/deployment":11,"./resources/drd":12,"./resources/execution":13,"./resources/external-task":14,"./resources/filter":15,"./resources/group":16,"./resources/history":17,"./resources/incident":18,"./resources/job":20,"./resources/job-definition":19,"./resources/message":21,"./resources/metrics":22,"./resources/migration":23,"./resources/modification":24,"./resources/password-policy":25,"./resources/process-definition":26,"./resources/process-instance":27,"./resources/task":29,"./resources/task-report":28,"./resources/tenant":30,"./resources/user":31,"./resources/variable":32}],5:[function(require,module,exports){
+},{"./../events":35,"./http-client":3,"./resources/authorization":5,"./resources/batch":6,"./resources/case-definition":7,"./resources/case-execution":8,"./resources/case-instance":9,"./resources/decision-definition":10,"./resources/deployment":11,"./resources/drd":12,"./resources/execution":13,"./resources/external-task":14,"./resources/filter":15,"./resources/group":16,"./resources/history":17,"./resources/incident":18,"./resources/job":20,"./resources/job-definition":19,"./resources/message":21,"./resources/metrics":22,"./resources/migration":23,"./resources/modification":24,"./resources/password-policy":25,"./resources/process-definition":26,"./resources/process-instance":27,"./resources/task":29,"./resources/task-report":28,"./resources/telemetry":30,"./resources/tenant":31,"./resources/user":32,"./resources/variable":33}],5:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -1235,7 +1236,7 @@ CaseExecution.modifyVariables = function(data, done) {
 
 module.exports = CaseExecution;
 
-},{"../../utils":46,"./../abstract-client-resource":1}],9:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1}],9:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -1320,7 +1321,7 @@ CaseInstance.setVariable = function(id, params, done) {
 
 module.exports = CaseInstance;
 
-},{"../../utils":46,"./../abstract-client-resource":1}],10:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1}],10:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -1865,7 +1866,7 @@ DRD.getXMLByKey = function(key, tenantId, done) {
 
 module.exports = DRD;
 
-},{"../../utils":46,"../abstract-client-resource":1}],13:[function(require,module,exports){
+},{"../../utils":47,"../abstract-client-resource":1}],13:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -1929,7 +1930,7 @@ Execution.modifyVariables = function(data, done) {
 module.exports = Execution;
 
 
-},{"../../utils":46,"./../abstract-client-resource":1}],14:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1}],14:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -2575,7 +2576,7 @@ Group.delete = function(options, done) {
 
 module.exports = Group;
 
-},{"../../utils":46,"./../abstract-client-resource":1}],17:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1}],17:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -5028,7 +5029,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 
 module.exports = ProcessDefinition;
 
-},{"./../abstract-client-resource":1,"q":52}],27:[function(require,module,exports){
+},{"./../abstract-client-resource":1,"q":53}],27:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -5268,7 +5269,7 @@ var ProcessInstance = AbstractClientResource.extend(
 
 module.exports = ProcessInstance;
 
-},{"../../utils":46,"./../abstract-client-resource":1}],28:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1}],28:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -5881,7 +5882,74 @@ Task.deleteVariable = function(data, done) {
 module.exports = Task;
 
 
-},{"../../utils":46,"./../abstract-client-resource":1,"q":52}],30:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1,"q":53}],30:[function(require,module,exports){
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. Camunda licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+'use strict';
+
+var AbstractClientResource = require('./../abstract-client-resource');
+
+/**
+ * Telemetry Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var Telemetry = AbstractClientResource.extend();
+
+/**
+ * API path for the process definition resource
+ * @type {String}
+ */
+Telemetry.path = 'telemetry';
+
+/**
+ * Fetches the telemetry configuration.
+ *
+ * @param  {Function} done
+ */
+Telemetry.get = function(done) {
+  return this.http.get(this.path + '/configuration', {
+    done: done
+  });
+};
+
+/**
+ * Configures whether Camunda receives data collection of the process engine setup and usage.
+ *
+ * @param  {Object}   payload                  is an object representation of an authorization
+ * @param  {Boolean}  payload.enableTelemetry  Specifies if the data collection should be sent or not.
+ * @param  {Function} done
+ */
+Telemetry.configure = function(payload, done) {
+  if (typeof payload === 'boolean') {
+    payload = {enableTelemetry: payload};
+  }
+
+  return this.http.post(this.path + '/configuration', {
+    data: payload,
+    done: done
+  });
+};
+
+module.exports = Telemetry;
+
+},{"./../abstract-client-resource":1}],31:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6133,7 +6201,7 @@ Tenant.options = function(options, done) {
 };
 module.exports = Tenant;
 
-},{"../../utils":46,"./../abstract-client-resource":1}],31:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1}],32:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6428,7 +6496,7 @@ User.unlock = function(options, done) {
 
 module.exports = User;
 
-},{"../../utils":46,"./../abstract-client-resource":1,"q":52}],32:[function(require,module,exports){
+},{"../../utils":47,"./../abstract-client-resource":1,"q":53}],33:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6617,7 +6685,7 @@ Variable.count = function(params, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":1}],33:[function(require,module,exports){
+},{"./../abstract-client-resource":1}],34:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6721,7 +6789,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":34}],34:[function(require,module,exports){
+},{"./events":35}],35:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6892,7 +6960,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7663,7 +7731,7 @@ CamundaForm.extend = BaseClass.extend;
 
 module.exports = CamundaForm;
 
-},{"./../base-class":33,"./../events":34,"./constants":36,"./controls/choices-field-handler":38,"./controls/file-download-handler":39,"./controls/input-field-handler":40,"./dom-lib":41,"./variable-manager":44,"moment":50}],36:[function(require,module,exports){
+},{"./../base-class":34,"./../events":35,"./constants":37,"./controls/choices-field-handler":39,"./controls/file-download-handler":40,"./controls/input-field-handler":41,"./dom-lib":42,"./variable-manager":45,"moment":51}],37:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7692,7 +7760,7 @@ module.exports = {
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7782,7 +7850,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":33,"./../dom-lib":41}],38:[function(require,module,exports){
+},{"../../base-class":34,"./../dom-lib":42}],39:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7934,7 +8002,7 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":36,"./../dom-lib":41,"./abstract-form-field":37}],39:[function(require,module,exports){
+},{"./../constants":37,"./../dom-lib":42,"./abstract-form-field":38}],40:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8002,7 +8070,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":36,"./abstract-form-field":37}],40:[function(require,module,exports){
+},{"./../constants":37,"./abstract-form-field":38}],41:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8132,7 +8200,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"../type-util":43,"./../constants":36,"./abstract-form-field":37}],41:[function(require,module,exports){
+},{"../type-util":44,"./../constants":37,"./abstract-form-field":38}],42:[function(require,module,exports){
 (function (global){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
@@ -8164,7 +8232,7 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8184,7 +8252,7 @@ module.exports = InputFieldHandler;
 
 module.exports = require('./camunda-form');
 
-},{"./camunda-form":35}],43:[function(require,module,exports){
+},{"./camunda-form":36}],44:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8308,7 +8376,7 @@ module.exports = {
   dateToString : dateToString
 };
 
-},{"../../vendor/fast-xml-parser":54}],44:[function(require,module,exports){
+},{"../../vendor/fast-xml-parser":55}],45:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8455,7 +8523,7 @@ VariableManager.prototype.variableNames = function() {
 
 module.exports = VariableManager;
 
-},{"./type-util":43,"moment":50}],45:[function(require,module,exports){
+},{"./type-util":44,"moment":51}],46:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8482,7 +8550,7 @@ module.exports = {
 };
 
 
-},{"./api-client":4,"./forms":42,"./utils":46}],46:[function(require,module,exports){
+},{"./api-client":4,"./forms":43,"./utils":47}],47:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8638,7 +8706,7 @@ utils.escapeUrl = function(string) {
     .replace(/%5C/g, '%255C');
 };
 
-},{"./forms/type-util":43}],47:[function(require,module,exports){
+},{"./forms/type-util":44}],48:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -8791,7 +8859,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
@@ -10572,7 +10640,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"base64-js":47,"buffer":48,"ieee754":49}],49:[function(require,module,exports){
+},{"base64-js":48,"buffer":49,"ieee754":50}],50:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -10658,7 +10726,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 //! moment.js
 
 ;(function (global, factory) {
@@ -15262,7 +15330,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 })));
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -15448,7 +15516,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 (function (process,setImmediate){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -17528,7 +17596,7 @@ return Q;
 });
 
 }).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":51,"timers":53}],53:[function(require,module,exports){
+},{"_process":52,"timers":54}],54:[function(require,module,exports){
 (function (setImmediate,clearImmediate){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -17607,7 +17675,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":51,"timers":53}],54:[function(require,module,exports){
+},{"process/browser.js":52,"timers":54}],55:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -18880,7 +18948,7 @@ exports.parse = parser_1;
 exports.parseToNimn = parser_8;
 exports.validate = parser_6;
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -20988,5 +21056,5 @@ exports.Request = client_1;
 exports.default = client;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[45])(45)
+},{}]},{},[46])(46)
 });

@@ -136,7 +136,7 @@ var CamundaFormAngular = CamundaForm.extend(
 module.exports = CamundaFormAngular;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./../../forms/camunda-form":38,"./../../forms/constants":39,"moment":51}],2:[function(require,module,exports){
+},{"./../../forms/camunda-form":39,"./../../forms/constants":40,"moment":52}],2:[function(require,module,exports){
 (function (global){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
@@ -244,7 +244,7 @@ module.exports = CamundaFormAngular;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./../../forms/type-util":45,"./camunda-form-angular":1}],3:[function(require,module,exports){
+},{"./../../forms/type-util":46,"./camunda-form-angular":1}],3:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -271,7 +271,7 @@ module.exports = {
 };
 
 
-},{"./../api-client":7,"./../utils":47,"./forms":2}],4:[function(require,module,exports){
+},{"./../api-client":7,"./../utils":48,"./forms":2}],4:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -558,7 +558,7 @@ Events.attach(AbstractClientResource);
 
 module.exports = AbstractClientResource;
 
-},{"./../base-class":36,"./../events":37,"q":53}],5:[function(require,module,exports){
+},{"./../base-class":37,"./../events":38,"q":54}],5:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -830,7 +830,7 @@ HttpClient.prototype.options = function(path, options) {
 module.exports = HttpClient;
 
 }).call(this,require("buffer").Buffer)
-},{"./../../vendor/superagent":56,"./../events":37,"./../utils":47,"buffer":49,"q":53}],7:[function(require,module,exports){
+},{"./../../vendor/superagent":57,"./../events":38,"./../utils":48,"buffer":50,"q":54}],7:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -948,6 +948,7 @@ CamundaClient.HttpClient = require('./http-client');
     _resources['case-definition']     = require('./resources/case-definition');
     _resources['user']                = require('./resources/user');
     _resources['group']               = require('./resources/group');
+    _resources['telemetry']           = require('./resources/telemetry');
     _resources['tenant']              = require('./resources/tenant');
     _resources['incident']            = require('./resources/incident');
     _resources['job-definition']      = require('./resources/job-definition');
@@ -1031,7 +1032,7 @@ module.exports = CamundaClient;
  * @callback noopCallback
  */
 
-},{"./../events":37,"./http-client":6,"./resources/authorization":8,"./resources/batch":9,"./resources/case-definition":10,"./resources/case-execution":11,"./resources/case-instance":12,"./resources/decision-definition":13,"./resources/deployment":14,"./resources/drd":15,"./resources/execution":16,"./resources/external-task":17,"./resources/filter":18,"./resources/group":19,"./resources/history":20,"./resources/incident":21,"./resources/job":23,"./resources/job-definition":22,"./resources/message":24,"./resources/metrics":25,"./resources/migration":26,"./resources/modification":27,"./resources/password-policy":28,"./resources/process-definition":29,"./resources/process-instance":30,"./resources/task":32,"./resources/task-report":31,"./resources/tenant":33,"./resources/user":34,"./resources/variable":35}],8:[function(require,module,exports){
+},{"./../events":38,"./http-client":6,"./resources/authorization":8,"./resources/batch":9,"./resources/case-definition":10,"./resources/case-execution":11,"./resources/case-instance":12,"./resources/decision-definition":13,"./resources/deployment":14,"./resources/drd":15,"./resources/execution":16,"./resources/external-task":17,"./resources/filter":18,"./resources/group":19,"./resources/history":20,"./resources/incident":21,"./resources/job":23,"./resources/job-definition":22,"./resources/message":24,"./resources/metrics":25,"./resources/migration":26,"./resources/modification":27,"./resources/password-policy":28,"./resources/process-definition":29,"./resources/process-instance":30,"./resources/task":32,"./resources/task-report":31,"./resources/telemetry":33,"./resources/tenant":34,"./resources/user":35,"./resources/variable":36}],8:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -1508,7 +1509,7 @@ CaseExecution.modifyVariables = function(data, done) {
 
 module.exports = CaseExecution;
 
-},{"../../utils":47,"./../abstract-client-resource":4}],12:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4}],12:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -1593,7 +1594,7 @@ CaseInstance.setVariable = function(id, params, done) {
 
 module.exports = CaseInstance;
 
-},{"../../utils":47,"./../abstract-client-resource":4}],13:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4}],13:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -2138,7 +2139,7 @@ DRD.getXMLByKey = function(key, tenantId, done) {
 
 module.exports = DRD;
 
-},{"../../utils":47,"../abstract-client-resource":4}],16:[function(require,module,exports){
+},{"../../utils":48,"../abstract-client-resource":4}],16:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -2202,7 +2203,7 @@ Execution.modifyVariables = function(data, done) {
 module.exports = Execution;
 
 
-},{"../../utils":47,"./../abstract-client-resource":4}],17:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4}],17:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -2848,7 +2849,7 @@ Group.delete = function(options, done) {
 
 module.exports = Group;
 
-},{"../../utils":47,"./../abstract-client-resource":4}],20:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4}],20:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -5301,7 +5302,7 @@ var ProcessDefinition = AbstractClientResource.extend(
 
 module.exports = ProcessDefinition;
 
-},{"./../abstract-client-resource":4,"q":53}],30:[function(require,module,exports){
+},{"./../abstract-client-resource":4,"q":54}],30:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -5541,7 +5542,7 @@ var ProcessInstance = AbstractClientResource.extend(
 
 module.exports = ProcessInstance;
 
-},{"../../utils":47,"./../abstract-client-resource":4}],31:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4}],31:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6154,7 +6155,74 @@ Task.deleteVariable = function(data, done) {
 module.exports = Task;
 
 
-},{"../../utils":47,"./../abstract-client-resource":4,"q":53}],33:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4,"q":54}],33:[function(require,module,exports){
+/*
+ * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. Camunda licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+'use strict';
+
+var AbstractClientResource = require('./../abstract-client-resource');
+
+/**
+ * Telemetry Resource
+ * @class
+ * @memberof CamSDK.client.resource
+ * @augments CamSDK.client.AbstractClientResource
+ */
+var Telemetry = AbstractClientResource.extend();
+
+/**
+ * API path for the process definition resource
+ * @type {String}
+ */
+Telemetry.path = 'telemetry';
+
+/**
+ * Fetches the telemetry configuration.
+ *
+ * @param  {Function} done
+ */
+Telemetry.get = function(done) {
+  return this.http.get(this.path + '/configuration', {
+    done: done
+  });
+};
+
+/**
+ * Configures whether Camunda receives data collection of the process engine setup and usage.
+ *
+ * @param  {Object}   payload                  is an object representation of an authorization
+ * @param  {Boolean}  payload.enableTelemetry  Specifies if the data collection should be sent or not.
+ * @param  {Function} done
+ */
+Telemetry.configure = function(payload, done) {
+  if (typeof payload === 'boolean') {
+    payload = {enableTelemetry: payload};
+  }
+
+  return this.http.post(this.path + '/configuration', {
+    data: payload,
+    done: done
+  });
+};
+
+module.exports = Telemetry;
+
+},{"./../abstract-client-resource":4}],34:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6406,7 +6474,7 @@ Tenant.options = function(options, done) {
 };
 module.exports = Tenant;
 
-},{"../../utils":47,"./../abstract-client-resource":4}],34:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4}],35:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6701,7 +6769,7 @@ User.unlock = function(options, done) {
 
 module.exports = User;
 
-},{"../../utils":47,"./../abstract-client-resource":4,"q":53}],35:[function(require,module,exports){
+},{"../../utils":48,"./../abstract-client-resource":4,"q":54}],36:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6890,7 +6958,7 @@ Variable.count = function(params, done) {
 module.exports = Variable;
 
 
-},{"./../abstract-client-resource":4}],36:[function(require,module,exports){
+},{"./../abstract-client-resource":4}],37:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -6994,7 +7062,7 @@ Events.attach(BaseClass);
 
 module.exports = BaseClass;
 
-},{"./events":37}],37:[function(require,module,exports){
+},{"./events":38}],38:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7165,7 +7233,7 @@ Events.trigger = function() {
 
 module.exports = Events;
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7936,7 +8004,7 @@ CamundaForm.extend = BaseClass.extend;
 
 module.exports = CamundaForm;
 
-},{"./../base-class":36,"./../events":37,"./constants":39,"./controls/choices-field-handler":41,"./controls/file-download-handler":42,"./controls/input-field-handler":43,"./dom-lib":44,"./variable-manager":46,"moment":51}],39:[function(require,module,exports){
+},{"./../base-class":37,"./../events":38,"./constants":40,"./controls/choices-field-handler":42,"./controls/file-download-handler":43,"./controls/input-field-handler":44,"./dom-lib":45,"./variable-manager":47,"moment":52}],40:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -7965,7 +8033,7 @@ module.exports = {
   DIRECTIVE_CAM_SCRIPT : 'cam-script'
 };
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8055,7 +8123,7 @@ AbstractFormField.prototype.getValue = noop;
 module.exports = AbstractFormField;
 
 
-},{"../../base-class":36,"./../dom-lib":44}],41:[function(require,module,exports){
+},{"../../base-class":37,"./../dom-lib":45}],42:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8207,7 +8275,7 @@ var ChoicesFieldHandler = AbstractFormField.extend(
 module.exports = ChoicesFieldHandler;
 
 
-},{"./../constants":39,"./../dom-lib":44,"./abstract-form-field":40}],42:[function(require,module,exports){
+},{"./../constants":40,"./../dom-lib":45,"./abstract-form-field":41}],43:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8275,7 +8343,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"./../constants":39,"./abstract-form-field":40}],43:[function(require,module,exports){
+},{"./../constants":40,"./abstract-form-field":41}],44:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8405,7 +8473,7 @@ var InputFieldHandler = AbstractFormField.extend(
 module.exports = InputFieldHandler;
 
 
-},{"../type-util":45,"./../constants":39,"./abstract-form-field":40}],44:[function(require,module,exports){
+},{"../type-util":46,"./../constants":40,"./abstract-form-field":41}],45:[function(require,module,exports){
 (function (global){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
@@ -8437,7 +8505,7 @@ module.exports = InputFieldHandler;
 }));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8561,7 +8629,7 @@ module.exports = {
   dateToString : dateToString
 };
 
-},{"../../vendor/fast-xml-parser":55}],46:[function(require,module,exports){
+},{"../../vendor/fast-xml-parser":56}],47:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8708,7 +8776,7 @@ VariableManager.prototype.variableNames = function() {
 
 module.exports = VariableManager;
 
-},{"./type-util":45,"moment":51}],47:[function(require,module,exports){
+},{"./type-util":46,"moment":52}],48:[function(require,module,exports){
 /*
  * Copyright Camunda Services GmbH and/or licensed to Camunda Services GmbH
  * under one or more contributor license agreements. See the NOTICE file
@@ -8864,7 +8932,7 @@ utils.escapeUrl = function(string) {
     .replace(/%5C/g, '%255C');
 };
 
-},{"./forms/type-util":45}],48:[function(require,module,exports){
+},{"./forms/type-util":46}],49:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -9017,7 +9085,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 (function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
@@ -10798,7 +10866,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"base64-js":48,"buffer":49,"ieee754":50}],50:[function(require,module,exports){
+},{"base64-js":49,"buffer":50,"ieee754":51}],51:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -10884,7 +10952,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 //! moment.js
 
 ;(function (global, factory) {
@@ -15488,7 +15556,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 
 })));
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -15674,7 +15742,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 (function (process,setImmediate){
 // vim:ts=4:sts=4:sw=4:
 /*!
@@ -17754,7 +17822,7 @@ return Q;
 });
 
 }).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":52,"timers":54}],54:[function(require,module,exports){
+},{"_process":53,"timers":55}],55:[function(require,module,exports){
 (function (setImmediate,clearImmediate){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -17833,7 +17901,7 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":52,"timers":54}],55:[function(require,module,exports){
+},{"process/browser.js":53,"timers":55}],56:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -19106,7 +19174,7 @@ exports.parse = parser_1;
 exports.parseToNimn = parser_8;
 exports.validate = parser_6;
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 (function (global){
 'use strict';
 
